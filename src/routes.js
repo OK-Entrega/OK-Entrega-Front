@@ -18,6 +18,7 @@ import Shippers from "./pages/shippers/shippers";
 import Orders from "./pages/orders/orders";
 import Field from "./pages/field/field";
 import Map from "./pages/map/map";
+import NotFound from "./pages/notfound/notfound";
 
 import { jwt, discriminator } from "./constants";
 
@@ -44,7 +45,7 @@ const PrivateRouteNotSignedIn = ({ component: Component, ...rest }) => (
             props =>
                 jwt === null ?
                     <Component {...props} /> :
-                    <Redirect to={{ pathname: "/dashboard", state: { from: props.location } }} />
+                    <Redirect to={{ pathname: "/my-companies", state: { from: props.location } }} />
         }
     />
 );
@@ -64,6 +65,7 @@ const routes = (
             <PrivateRouteSignedIn path="/my-companies/:companyId/field" component={Field} />
             <PrivateRouteSignedIn path="/my-companies/:companyId/map" component={Map} />
             <PrivateRouteSignedIn path="/my-companies/:companyId/shippers" component={Shippers} />
+            <Route component={NotFound}/>
         </Switch>
     </Router>
 )

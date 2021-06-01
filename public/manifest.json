@@ -1,9 +1,9 @@
 {
-  "short_name": "OK Entrega",
-  "name": "OK Entrega",
+  "short_name": "React App",
+  "name": "Create React App Sample",
   "icons": [
     {
-      "src": "okentrega.ico",
+      "src": "favicon.ico",
       "sizes": "64x64 32x32 24x24 16x16",
       "type": "image/x-icon"
     }

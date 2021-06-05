@@ -1,0 +1,15 @@
+.Fundo, .Verde {
+   width: 100%;
+   
+    
+   }
+
+   .Verde{
+       background-color: #2ecc7056;
+   }
+
+   .Fundo{
+       background-image: url("../../../assets/images/widget/Background-Login.jpg");
+   }
+
+ 

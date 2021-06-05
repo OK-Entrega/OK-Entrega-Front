@@ -8,6 +8,9 @@ export default function SignUp() {
     return (
         <>
             <Breadcrumb/>
+            <div className="Fundo">
+                <div className="Verde">
+
                 <div className="auth-wrapper">
                     <div className="auth-content">
                         <div className="card">
@@ -40,6 +43,8 @@ export default function SignUp() {
                         </div>
                     </div>
                 </div>
+                </div>
+                                    </div>
         </>
     );
 }

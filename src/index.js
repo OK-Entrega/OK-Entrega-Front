@@ -5,19 +5,23 @@ import { Provider } from 'react-redux';
 import * as serviceWorker from './serviceWorker';
 import reducer from './store/reducer';
 import routes from './routes';
+import { ToastProvider } from "react-toast-notifications";
+import "./index.css";
 
 const store = createStore(reducer);
 
 const app = (
-    <Provider store={store}>
-        <React.StrictMode>
-            {routes}
-        </React.StrictMode>,
-    </Provider>
+    <ToastProvider>
+        <Provider store={store}>
+            <React.StrictMode>
+                {routes}
+            </React.StrictMode>,
+        </Provider>
+    </ToastProvider>
 );
 
 ReactDOM.render(
-    app, 
+    app,
     document.getElementById('root')
 );
 

@@ -1,0 +1,4 @@
+.react-toast-notifications__container {
+    z-index: 1100 !important;
+    top: 64px !important;
+}

@@ -1,0 +1,11 @@
+p.match {
+    margin: 0;
+}
+
+.is-match {
+    color: #2ECC71
+}
+
+.not-is-match {
+    color: red
+}

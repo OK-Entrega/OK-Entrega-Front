@@ -22,7 +22,10 @@ export default function Company({ ...props }) {
                         }
                     </Card.Text>
                     <Link to={`/my-companies/${props.id}/dashboard`}>
-                        <Button variant="success" style={{ width: "75%", margin: "auto", height: 25, display: "flex", alignItems: "center", justifyContent: "center" }}>Ver</Button>
+                        <Button variant="success" style={{ width: "75%", margin: "auto", height: 25, display: "flex", alignItems: "center", justifyContent: "center" }} onClick={() => {
+                            localStorage.removeItem("companyId");
+                            localStorage.setItem("companyId", props.id);
+                        }}>Ver</Button>
                     </Link>
                 </Card.Body>
             </Card>

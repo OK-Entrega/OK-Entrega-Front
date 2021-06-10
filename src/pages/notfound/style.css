@@ -1,0 +1,248 @@
+*{
+    padding: 0;
+    margin: 0;
+}
+body{
+    font-family: 'Barlow', sans-serif;
+    background-color: #f7f7f7;
+    background-image: url("../../assets/images/homes/backgorund5.jpg");
+    height: 1800px;
+}
+.container li{
+    margin-top: 25px;
+}
+
+li a{
+    font-size: 30px;
+    
+}
+.cabecalho{
+    width: 100%;
+    height: 100px;
+    background-color: #031F3C;
+    display: flex;
+    justify-content: space-between;
+}
+.cabecalho div{
+    margin-left: 100px;
+    display: flex;
+    text-decoration: none;
+    list-style-type: none;
+    width: 250px;
+    justify-content: space-between;
+}
+.cabecalho a:hover{
+    background-color: #2ECC71;
+}
+.cabecalho a:active{
+    text-decoration: underline;
+    color: #2ECC71;
+}
+
+.cabecalho nav{
+    width: 500px;
+    height: 100%;
+    justify-content: center;
+}
+.cabecalho img{
+    height: 75px;
+    width: 80px;
+    padding-top: 11px;
+    padding-left: 11px;;
+}
+.cabecalho ul{
+    display: flex;
+    justify-content: space-evenly;
+    list-style-type: none;
+    height: 100%;
+    margin-top: 25px;
+}
+.cabecalho li{
+    
+    height: 100%;
+}
+.cabecalho a{
+    text-decoration: none;
+    color: white;
+    font-weight: bolder;
+}
+.completa{
+    background-color: #f7f7f700;
+    display: flex;
+    justify-content: space-evenly;
+}
+.divs{
+    
+    background-color: #f7f7f700;
+}
+.imagem img{
+    padding-top: 25px;
+    width: 650px;
+    height: 442px;
+}
+.textos{
+    padding-top: 120px;
+}
+.textos h1{
+    width: 350px;
+    height: 150px;
+    font-size: 40px;
+}
+.corVerde {
+    color: #2ECC71;
+}
+.textos h3{
+    padding-top: 50px;
+    width: 350px;
+    height: 100px;
+    font-size: 20px;
+}
+.botao button{
+    border: 0px;
+    font-weight: bold;
+    font-size: 20px;
+    border-radius: 10px;
+    width: 200px;
+    height: 50px;
+}
+.bot1{
+    color: white;
+    background-color: #031F3C;
+}
+.bot2{
+    color: white;
+    background-color: #2ECC71;
+    margin-left: 5px;
+}
+.divs{
+    justify-content: space-evenly;
+    display: flex;
+}
+.coluna1 h2, .coluna2 h2{
+    margin-left: 15px;
+}
+.coluna1 div, .coluna2 div{
+    
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    align-items: center;
+    margin: auto;
+    border-radius: 20px;
+    width: 420px;
+    height: 280px;
+    background-color: #F7F7F7;
+    margin-top: 25px;
+    box-shadow: 0 0 2em #727272;
+    border: 0px;
+}
+.divOk{
+    display: flex;
+}
+.coluna1 p, .coluna2 p{
+    font-weight: bold;   
+}
+.h1_3{
+    padding-top: 52px;
+    padding-bottom: 50px;
+    padding-left: 7px;
+    color: #2ECC71;
+}
+.h1_2{
+    padding-top: 50px;
+    padding-bottom: 50px;
+    padding-left: 400px; 
+    font-size: 32px;
+}
+.divs h2{
+    padding-left: 100px;
+}
+.tempo{
+    margin-top: 35px;
+    margin-left: 472px;
+    text-align: center;
+}
+.tempo h2{
+    padding: 30px;
+}
+.tempo button{
+    color: white;
+    background-color: #2ECC71;
+    border: 0px;
+    font-weight: bold;
+    font-size: 20px;
+    border-radius: 10px;
+    width: 200px;
+    height: 50px;
+}
+.divisao{
+    display: flex;
+    background-color: #f7f7f700;
+    
+    width: 100%;
+}
+.divisao img{
+    width: 150px;
+    height: 75px;
+    margin-left: 175px;
+    margin-top: 90px;
+}
+.divisao h2{
+    font-size: 35px;
+}
+
+footer{
+    display: flex;
+    margin-top: 50px;
+    border-top: 5px solid #2ECC71;
+    background-color: #f7f7f7;
+    justify-content: space-around;
+    height: 250px;
+}
+.Vazio{
+    width: 100px;
+    height: 50px;
+}
+.whatsapp{
+    display: flex;
+    width: 200px;
+    height: 45px;
+    margin-top: 15px;
+}
+
+.sociais p{
+    font-size: 20px;
+    font-weight: bold;
+    width: 250px;
+}
+.sociais img{
+    width: 170px;
+    height: 40px;
+}
+.whatsapp img{
+    width: 40px;
+    height: 40px;
+}
+.whatsapp p{
+    font-size: 20px;
+}
+.divs p{
+    font-size: 25px;
+}
+.copy{
+    justify-content: center;
+    text-align: center;
+    align-items: center;
+    margin: auto;
+    width: 300px;
+    margin-left: 540px;
+}
+.copy img{
+    width: 129px;
+    height: 121px;
+    
+}
+.sociais{
+    width: 250px;
+    align-self: center;
+}

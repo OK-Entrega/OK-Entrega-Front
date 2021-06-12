@@ -1,5 +1,3 @@
-const companyId = localStorage.getItem("companyId");
-
 export const navigation = {
     items: [
         {
@@ -11,14 +9,14 @@ export const navigation = {
                     id: 'dashboard',
                     title: 'Dashboard',
                     type: 'item',
-                    url: `/my-companies/${companyId}/dashboard`,
+                    url: `/my-companies/companyId/dashboard`,
                     icon: 'feather icon-bar-chart-2',
                 },
                 {
                     id: 'shippers',
                     title: 'Embarcadores',
                     type: 'item',
-                    url: `/my-companies/${companyId}/shippers`,
+                    url: `/my-companies/companyId/shippers`,
                     icon: 'feather icon-user',
                 }
             ]
@@ -38,13 +36,13 @@ export const navigation = {
                             id: 'news',
                             title: 'Pendentes',
                             type: 'item',
-                            url: `/my-companies/${companyId}/orders/pending`
+                            url: `/my-companies/companyId/orders/pending`
                         },
                         {
                             id: 'history',
                             title: 'Histórico',
                             type: 'item',
-                            url: `/my-companies/${companyId}/orders/history`
+                            url: `/my-companies/companyId/orders/history`
                         }
                     ]
                 }
@@ -60,14 +58,14 @@ export const navigation = {
                     title: 'Registros',
                     type: 'item',
                     icon: 'feather icon-pie-chart',
-                    url: `/my-companies/${companyId}/records`
+                    url: `/my-companies/companyId/records`
                 },
                 {
                     id: 'maps',
                     title: 'Georeferenciamento de registros',
                     type: 'item',
                     icon: 'feather icon-map',
-                    url: `/my-companies/${companyId}/georeferencing-of-records`
+                    url: `/my-companies/companyId/georeferencing-of-records`
                 }
             ]
         }

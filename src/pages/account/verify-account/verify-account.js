@@ -5,7 +5,8 @@ import { verifyAccount } from "../../../services/user-services";
 import { Spinner } from "react-bootstrap";
 
 export default function VerifyAccount() {
-    const shipperId = window.document.URL.split("/")[4];
+    //const shipperId = window.location.href.split("/")[4];
+    const shipperId = window.location.href.split("=")[1];
 
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState();
@@ -18,8 +19,10 @@ export default function VerifyAccount() {
             .then(response => response.json())
             .then(data => {
                 setLoading(false);
-                if(data.statusCode === 400)
+                if(data.statusCode === 400) {
                     setAlreadyVerified(true);
+                    setSuccess(true);
+                }
                 else if(data.success)
                     setSuccess(true);
                 else
@@ -43,7 +46,7 @@ export default function VerifyAccount() {
                                             <img src={Logo} style={{ height: 50 }}></img>
                                         </div>
                                         <h3 className="mb-4">{alreadyVerified ? "Email já verificado!" : success ? "Email verificado com sucesso!" : "Falha ao verificar o email!"}</h3>
-                                        <p className="mb-0 text-muted">{alreadyVerified ? "Seu email já foi verificado anteriormente." : success ? "Agora você está a apenas um passo de usufruir de nosso sistema!" : "Recarregue a página, ou crie outro cadastro."} {success || alreadyVerified && <NavLink to="/signin">Entre.</NavLink>}{!success && <NavLink to="/signup">Cadastre-se novamente.</NavLink>}</p>
+                                        <p className="mb-0 text-muted">{alreadyVerified ? "Seu email já foi verificado anteriormente." : success ? "Agora você está a apenas um passo de usufruir de nosso sistema!" : "Recarregue a página, ou crie outro cadastro."} {success && <NavLink to="/signin">Entre.</NavLink>}{!success && <NavLink to="/signup">Cadastre-se novamente.</NavLink>}</p>
                                     </>
                             }
                         </div>

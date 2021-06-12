@@ -1,26 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import Header from "../../components/header/header";
 import NavAside from "../../components/nav-aside/nav-aside";
-import { Row, Col, Card, Container, Form, Accordion, Button, FormFile, Spinner, InputGroup } from "react-bootstrap";
-import { create, getPending } from "../../services/order-services";
+import GeneratePagination from '../../components/generate-pagination/generate-pagination';
+import { Row, Col, Card, Container, Form, Accordion, Button, FormFile, Spinner, InputGroup, Modal, Pagination } from "react-bootstrap";
+import { create, getPending, print, deleteMany } from "../../services/order-services";
 import { useToasts } from "react-toast-notifications";
 import BootstrapTable from 'react-bootstrap-table-next';
+import { useFormik } from "formik";
+import SeeOccurrencesModal from "./see-occurrences-modal";
 
 const columns = [
     {
         dataField: 'receiver',
-        text: 'DESTINATÁRIO|CNPJ',
-        sort: false
-    }, 
+        text: 'DESTINATÁRIO|CNPJ'
+    },
     {
         dataField: 'carrier',
-        text: 'TRANSPORTADORA|CNPJ',
-        sort: true
-    }, 
+        text: 'TRANSPORTADORA|CNPJ'
+    },
     {
         dataField: "issuedAt",
         text: "DATA DE EMISSÃO"
-    }, 
+    },
     {
         dataField: "dispatchedAt",
         text: "DATA DE DESPACHO"
@@ -44,6 +45,10 @@ const columns = [
     {
         dataField: "accessKey",
         text: "CHAVE DE ACESSO"
+    },
+    {
+        dataField: "occurrences",
+        text: "OCORRÊNCIAS"
     },
     {
         dataField: "destinationCEP",
@@ -100,24 +105,28 @@ export default function OrdersPending() {
 
         let queryString = encodeQueryData(params);
 
-        console.log(queryString)
-
         getPending(queryString)
             .then(response => response.json())
             .then(data => {
-                data.data.pendingOrders.map(o => {
-                    o.xmlPath = <a href={o.xmlPath} download target="_blank">Visualizar XML</a>
-                    o.receiver = <p>{o.receiverName}<br></br>{o.receiverCNPJ}</p>
-                    o.carrier = <p>{o.carrierName}<br></br>{o.carrierCNPJ}</p>
-                    o.vehicle = <p>{o.vehicleType}<br></br>{o.vehiclePlate}</p>
-                })
+                if (data?.data?.pendingOrders)
+                    data.data.pendingOrders.map(o => {
+                        o.xmlPath = <a href={o.xmlPath} download target="_blank">Visualizar XML</a>
+                        o.receiver = <p>{o.receiverName}<br></br>{o.receiverCNPJ}</p>
+                        o.carrier = <p>{o.carrierName}<br></br>{o.carrierCNPJ}</p>
+                        o.vehicle = <p>{o.vehicleType}<br></br>{o.vehiclePlate}</p>
+                        let backup = o.occurrences;
+                        o.occurrences = backup !== undefined && backup.length > 0 ? <a href="" onClick={(e) => {
+                            e.preventDefault();
+                            setShow(true);
+                            setOccurrences(backup);
+                        }}>Ver ocorrências</a> : <p>Nenhuma ocorrência</p>
+                    })
                 setData(data)
             });
     }
 
-    const [ordersIds, setOrdersIds] = useState([]);
-    const [params, setParams] = useState(
-        {
+    const formik = useFormik({
+        initialValues: {
             companyId: companyId,
             receiverCNPJ: "",
             receiverName: "",
@@ -143,18 +152,82 @@ export default function OrdersPending() {
             destinationComplement: "",
             orderBy: "",
             descending: false,
-            page: 1
+            page: pageActive === undefined ? 1 : pageActive
+        },
+        onSubmit: async (values) => {
+            let params = values;
+            params.receiverCNPJ = values.receiverCNPJ?.replaceAll(".", "").replaceAll("-", "").replaceAll("/", "");
+            params.carrierCNPJ = values.carrierCNPJ?.replaceAll(".", "").replaceAll("-", "").replaceAll("/", "");
+            if (values.vehicleType != null)
+                params.vehicleType = values.vehicleType;
+            else
+                params.vehicleType = null;
+            if (isNaN(values.totalValueBiggerThen))
+                params.totalValueBiggerThen = Number(values.totalValueBiggerThen?.replaceAll(".", "").replaceAll(",", "."));
+            if (isNaN(values.totalValueBiggerThen))
+                params.totalValueLessThen = Number(values.totalValueLessThen?.replaceAll(".", "").replaceAll(",", "."));
+            params.weightBiggerThen = Number(values.weightBiggerThen);
+            params.weightLessThen = Number(values.weightLessThen);
+            params.accessKey = values.accessKey?.replaceAll(".", "");
+            params.destinationCEP = values.destinationCEP?.replaceAll("-", "");
+
+            list(params);
         }
-    );
+    });
+
+    const [show, setShow] = useState(false);
+    const [pageActive, setPageActive] = useState(1);
+    const [ordersIds, setOrdersIds] = useState([]);
     const [data, setData] = useState({});
+    const [occurrences, setOccurrences] = useState({});
     const [xmls, setXmls] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [showAccordion, setShowAccordion] = useState(false);
     const { addToast } = useToasts();
 
     useEffect(() => {
-        list(params);
+        list(formik.values);
     }, []);
+
+    const handleOnSelect = (row, isSelect) => {
+        if (isSelect)
+            setOrdersIds([...ordersIds, row.id])
+        else
+            setOrdersIds(ordersIds.filter(i => i !== row.id));
+    }
+
+    const printOrders = (ids) => {
+        let body;
+        if (ids)
+            body = { ordersIds: ids }
+        else
+            body = { ordersIds: ordersIds }
+        print(body)
+            .then(response => response.blob())
+            .then(data => {
+                var url = window.URL.createObjectURL(data);
+                window.open(url);
+            });
+    }
+
+    const deleteOrders = (ids) => {
+        let body;
+        if (ids)
+            body = { ordersIds: ids }
+        else
+            body = { ordersIds: ordersIds }
+        deleteMany(body)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    addToast(data.message, { appearance: "success", autoDismiss: true });
+                    list({ companyId: companyId });
+                }
+                else
+                    addToast(data.message, { appearance: "error", autoDismiss: true });
+            });
+        setOrdersIds([]);
+    }
 
     return (
         <>
@@ -207,7 +280,7 @@ export default function OrdersPending() {
                                                 </Card.Header>
                                                 <Card.Body style={{ textAlign: "center" }}>
                                                     {
-                                                        xmls === null
+                                                        xmls === null || xmls.length < 1
                                                             ?
                                                             <div style={{ opacity: 0.5 }}>
                                                                 <i class="fas fa-folder-open"></i>
@@ -224,9 +297,7 @@ export default function OrdersPending() {
                                                                                     <div style={{ display: "flex" }}>
                                                                                         <i class="fas fa-file-code" style={{ fontSize: 18, color: "black", marginRight: 4 }}></i>
                                                                                         <i class="fas fa-times" style={{ color: "red", cursor: "pointer" }} onClick={() => {
-                                                                                            let files = xmls;
-                                                                                            files.splice(files.indexOf(files.find(f => f.id === xml.id)), 1)
-                                                                                            setXmls(files);
+                                                                                            setXmls(xmls.filter(x => x.id !== xml.id));
                                                                                         }}></i>
                                                                                     </div>
                                                                                     <p>{xml.file.name}</p>
@@ -250,7 +321,7 @@ export default function OrdersPending() {
                                                                         .then(data => {
                                                                             if (data.success) {
                                                                                 addToast(data.message, { appearance: "success", autoDismiss: true });
-                                                                                list();
+                                                                                list({ companyId: companyId });
                                                                             }
                                                                             else
                                                                                 addToast(data.message, { appearance: "error", autoDismiss: true });
@@ -264,6 +335,7 @@ export default function OrdersPending() {
                                             </Card>
                                         </Col>
                                         <Col md={12}>
+                                            <Modal show={show}><SeeOccurrencesModal setShow={setShow} occurrences={occurrences} /></Modal>
                                             <Card>
                                                 <Card.Header style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                                                     <Card.Title as="h5">Entregas pendentes</Card.Title>
@@ -278,74 +350,85 @@ export default function OrdersPending() {
                                                                 <Row>
                                                                     <Col md={3}>
                                                                         <Form.Group>
-                                                                            <Form.Label>Destinatário|CNPJ</Form.Label>
+                                                                            <Form.Label>Destinatário</Form.Label>
                                                                             <Form.Control
                                                                                 type="text"
-                                                                                placeholder="Destinatário|CNPJ"
-                                                                                onChange={(e) => {
-                                                                                    var text = e.target.value;
-
-                                                                                    if (/[0-9]/.test(text)) {
-                                                                                        var x = text.replace(/\D/g, '').match(/(\d{0,2})(\d{0,3})(\d{0,3})(\d{0,4})(\d{0,2})/);
-                                                                                        e.target.value = !x[2] ? x[1] : x[1] + '.' + x[2] + '.' + x[3] + '/' + x[4] + (x[5] ? '-' + x[5] : '');
-
-                                                                                        params.receiverCNPJ = text.replaceAll("/", "").replaceAll(".", "").replaceAll("-", "");
-                                                                                    }
-                                                                                    else {
-                                                                                        params.receiverName = text;
-                                                                                        e.target.value = text;
-                                                                                    }
-                                                                                }}
+                                                                                placeholder="Destinatário"
+                                                                                name="receiverName"
+                                                                                onChange={formik.handleChange}
+                                                                                value={formik.values.receiverName}
                                                                             />
                                                                         </Form.Group>
                                                                     </Col>
                                                                     <Col md={3}>
                                                                         <Form.Group>
-                                                                            <Form.Label>Transportadora|CNPJ</Form.Label>
+                                                                            <Form.Label>CNPJ Destinatário</Form.Label>
                                                                             <Form.Control
                                                                                 type="text"
-                                                                                placeholder="Transportadora|CNPJ"
+                                                                                placeholder="CNPJ Destinatário"
+                                                                                name="receiverCNPJ"
                                                                                 onChange={(e) => {
-                                                                                    var text = e.target.value;
-
-                                                                                    if (/[0-9]/.test(text)) {
-                                                                                        var x = text.replace(/\D/g, '').match(/(\d{0,2})(\d{0,3})(\d{0,3})(\d{0,4})(\d{0,2})/);
-                                                                                        e.target.value = !x[2] ? x[1] : x[1] + '.' + x[2] + '.' + x[3] + '/' + x[4] + (x[5] ? '-' + x[5] : '');
-                                                                                        params.carrierCNPJ = text.replaceAll("/", "").replaceAll(".", "").replaceAll("-", "");
-                                                                                    }
-                                                                                    else {
-                                                                                        params.carrierName = text;
-                                                                                    }
+                                                                                    var x = e.target.value.replace(/\D/g, '').match(/(\d{0,2})(\d{0,3})(\d{0,3})(\d{0,4})(\d{0,2})/);
+                                                                                    e.target.value = !x[2] ? x[1] : x[1] + '.' + x[2] + '.' + x[3] + '/' + x[4] + (x[5] ? '-' + x[5] : '');
+                                                                                    formik.setFieldValue("receiverCNPJ", e.target.value.trim());
                                                                                 }}
+                                                                                value={formik.values.receiverCNPJ}
                                                                             />
                                                                         </Form.Group>
                                                                     </Col>
-                                                                    <Col md={3}></Col>
+                                                                    <Col md={3}>
+                                                                        <Form.Group>
+                                                                            <Form.Label>Transportadora</Form.Label>
+                                                                            <Form.Control
+                                                                                type="text"
+                                                                                placeholder="Transportadora"
+                                                                                name="carrierName"
+                                                                                onChange={formik.handleChange}
+                                                                                value={formik.values.carrierName}
+                                                                            />
+                                                                        </Form.Group>
+                                                                    </Col>
+                                                                    <Col md={3}>
+                                                                        <Form.Group>
+                                                                            <Form.Label>CNPJ Transportadora</Form.Label>
+                                                                            <Form.Control
+                                                                                type="text"
+                                                                                placeholder="CNPJ Transportadora"
+                                                                                name="carrierCNPJ"
+                                                                                onChange={(e) => {
+                                                                                    var x = e.target.value.replace(/\D/g, '').match(/(\d{0,2})(\d{0,3})(\d{0,3})(\d{0,4})(\d{0,2})/);
+                                                                                    e.target.value = !x[2] ? x[1] : x[1] + '.' + x[2] + '.' + x[3] + '/' + x[4] + (x[5] ? '-' + x[5] : '');
+                                                                                    formik.setFieldValue("carrierCNPJ", e.target.value.trim());
+                                                                                }}
+                                                                                value={formik.values.carrierCNPJ}
+                                                                            />
+                                                                        </Form.Group>
+                                                                    </Col>
                                                                 </Row>
                                                                 <hr></hr>
                                                                 <Row>
                                                                     <Col md={3}>
                                                                         <Form.Group>
                                                                             <Form.Label>Data de emissão maior que</Form.Label>
-                                                                            <Form.Control type="date" onChange={(e) => params.issuedAtBiggerThen = e.target.value} />
+                                                                            <Form.Control type="date" name="issuedAtBiggerThen" value={formik.values.issuedAtBiggerThen} onChange={formik.handleChange} />
                                                                         </Form.Group>
                                                                     </Col>
                                                                     <Col md={3}>
                                                                         <Form.Group>
                                                                             <Form.Label>Data de emissão menor que</Form.Label>
-                                                                            <Form.Control type="date" onChange={(e) => params.issuedAtLessThen = e.target.value} />
+                                                                            <Form.Control type="date" name="issuedAtLessThen" value={formik.values.issuedAtLessThen} onChange={formik.handleChange} />
                                                                         </Form.Group>
                                                                     </Col>
                                                                     <Col md={3}>
                                                                         <Form.Group>
                                                                             <Form.Label>Data de despacho maior que</Form.Label>
-                                                                            <Form.Control type="date" onChange={(e) => params.dispatchedAtBiggerThen = e.target.value} />
+                                                                            <Form.Control type="date" name="dispatchedAtBiggerThen" value={formik.values.dispatchedAtBiggerThen} onChange={formik.handleChange} />
                                                                         </Form.Group>
                                                                     </Col>
                                                                     <Col md={3}>
                                                                         <Form.Group>
                                                                             <Form.Label>Data de despacho menor que</Form.Label>
-                                                                            <Form.Control type="date" onChange={(e) => params.dispatchedAtLessThen = e.target.value} />
+                                                                            <Form.Control type="date" name="dispatchedAtLessThen" value={formik.values.dispatchedAtLessThen} onChange={formik.handleChange} />
                                                                         </Form.Group>
                                                                     </Col>
                                                                 </Row>
@@ -354,8 +437,8 @@ export default function OrdersPending() {
                                                                     <Col md={3}>
                                                                         <Form.Group>
                                                                             <Form.Label>Tipo do veículo</Form.Label>
-                                                                            <Form.Control size="sm" as="select" style={{ height: 42 }} onChange={(e) => params.vehicleType = e.target.value}>
-                                                                                <option value={null}>Todos</option>
+                                                                            <Form.Control size="sm" as="select" name="vehicleType" style={{ height: 42 }} onChange={formik.handleChange} value={formik.values.vehicleType}>
+                                                                                <option value={5} selected>Todos</option>
                                                                                 <option value={0}>Caminhão</option>
                                                                                 <option value={1}>Furgão</option>
                                                                                 <option value={2}>Moto</option>
@@ -367,9 +450,8 @@ export default function OrdersPending() {
                                                                     <Col md={3}>
                                                                         <Form.Group>
                                                                             <Form.Label>Placa do veículo</Form.Label>
-                                                                            <Form.Control type="text" label="Placa do veículo" onChange={(e) => {
+                                                                            <Form.Control type="text" name="vehiclePlate" value={formik.values.vehiclePlate} label="Placa do veículo" onChange={(e) => {
                                                                                 e.target.value = e.target.value.toUpperCase();
-                                                                                params.vehiclePlate = e.target.value;
                                                                                 if (!/[A-Z]/.test(e.target.value[0]))
                                                                                     e.target.value = e.target.value.substring(0, 0);
                                                                                 if (!/[A-Z]/.test(e.target.value[1]))
@@ -384,8 +466,9 @@ export default function OrdersPending() {
                                                                                     e.target.value = e.target.value.substring(0, 5);
                                                                                 if (!/[0-9]/.test(e.target.value[6]))
                                                                                     e.target.value = e.target.value.substring(0, 6);
-                                                                                if (e.target.value.length > 6)
-                                                                                    e.target.value = e.target.value.substring(0, 6);
+                                                                                if (e.target.value.length > 7)
+                                                                                    e.target.value = e.target.value.substring(0, 7);
+                                                                                formik.setFieldValue("vehiclePlate", e.target.value);
                                                                             }} />
                                                                         </Form.Group>
                                                                     </Col>
@@ -399,14 +482,14 @@ export default function OrdersPending() {
                                                                                 <InputGroup.Prepend>
                                                                                     <InputGroup.Text>R$</InputGroup.Text>
                                                                                 </InputGroup.Prepend>
-                                                                                <Form.Control type="text" label="Valor total maior que" onChange={(e) => {
-                                                                                    var v = e.target.value.replace(/\D/g, '');
-                                                                                    v = (v / 100).toFixed(2) + '';
-                                                                                    v = v.replace(".", ",");
-                                                                                    v = v.replace(/(\d)(\d{3})(\d{3}),/g, "$1.$2.$3,");
-                                                                                    v = v.replace(/(\d)(\d{3}),/g, "$1.$2,");
-                                                                                    e.target.value = v;
-                                                                                    params.totalValueBiggerThen = e.target.value.replaceAll(",", "").replaceAll(".", "");
+                                                                                <Form.Control type="text" label="Valor total maior que" value={formik.values.totalValueBiggerThen} name="totalValueBiggerThen" onChange={(e) => {
+                                                                                    // var v = e.target.value.replace(/\D/g, '');
+                                                                                    // v = (v / 100).toFixed(2) + '';
+                                                                                    // v = v.replace(".", ",");
+                                                                                    // v = v.replace(/(\d)(\d{3})(\d{3}),/g, "$1.$2.$3,");
+                                                                                    // v = v.replace(/(\d)(\d{3}),/g, "$1.$2,");
+                                                                                    // e.target.value = v;
+                                                                                    formik.setFieldValue("totalValueBiggerThen", e.target.value);
                                                                                 }} />
                                                                             </InputGroup>
                                                                         </Form.Group>
@@ -418,14 +501,14 @@ export default function OrdersPending() {
                                                                                 <InputGroup.Prepend>
                                                                                     <InputGroup.Text>R$</InputGroup.Text>
                                                                                 </InputGroup.Prepend>
-                                                                                <Form.Control type="text" label="Valor total menor que" onChange={(e) => {
-                                                                                    var v = e.target.value.replace(/\D/g, '');
-                                                                                    v = (v / 100).toFixed(2) + '';
-                                                                                    v = v.replace(".", ",");
-                                                                                    v = v.replace(/(\d)(\d{3})(\d{3}),/g, "$1.$2.$3,");
-                                                                                    v = v.replace(/(\d)(\d{3}),/g, "$1.$2,");
-                                                                                    e.target.value = v;
-                                                                                    params.totalValueLessThen = e.target.value.replaceAll(",", "").replaceAll(".", "");
+                                                                                <Form.Control type="text" name="totalValueLessThen" label="Valor total menor que" value={formik.values.totalValueLessThen} onChange={(e) => {
+                                                                                    // var v = e.target.value.replace(/\D/g, '');
+                                                                                    // v = (v / 100).toFixed(2) + '';
+                                                                                    // v = v.replace(".", ",");
+                                                                                    // v = v.replace(/(\d)(\d{3})(\d{3}),/g, "$1.$2.$3,");
+                                                                                    // v = v.replace(/(\d)(\d{3}),/g, "$1.$2,");
+                                                                                    // e.target.value = v;
+                                                                                    formik.setFieldValue("totalValueLessThen", e.target.value);
                                                                                 }} />
                                                                             </InputGroup>
                                                                         </Form.Group>
@@ -437,21 +520,21 @@ export default function OrdersPending() {
                                                                                 <InputGroup.Prepend>
                                                                                     <InputGroup.Text>Kg</InputGroup.Text>
                                                                                 </InputGroup.Prepend>
-                                                                                <Form.Control type="text" label="Peso bruto maior que" onChange={(e) => {
-                                                                                    var v = e.target.value, integer = v.split('.')[0];
-                                                                                    v = v.replace(/\D/, "");
-                                                                                    v = v.replace(/^[0]+/, "");
+                                                                                <Form.Control type="text" name="weightBiggerThen" value={formik.values.weightBiggerThen} label="Peso bruto maior que" onChange={(e) => {
+                                                                                    // var v = e.target.value, integer = v.split('.')[0];
+                                                                                    // v = v.replace(/\D/, "");
+                                                                                    // v = v.replace(/^[0]+/, "");
 
-                                                                                    if (v.length <= 3 || !integer) {
-                                                                                        if (v.length === 1) v = '0.00' + v;
-                                                                                        if (v.length === 2) v = '0.0' + v;
-                                                                                        if (v.length === 3) v = '0.' + v;
-                                                                                    } else {
-                                                                                        v = v.replace(/^(\d{1,})(\d{3})$/, "$1.$2");
-                                                                                    }
+                                                                                    // if (v.length <= 3 || !integer) {
+                                                                                    //     if (v.length === 1) v = '0.00' + v;
+                                                                                    //     if (v.length === 2) v = '0.0' + v;
+                                                                                    //     if (v.length === 3) v = '0.' + v;
+                                                                                    // } else {
+                                                                                    //     v = v.replace(/^(\d{1,})(\d{3})$/, "$1.$2");
+                                                                                    // }
 
-                                                                                    e.target.value = v;
-                                                                                    params.weightBiggerThen = e.target.value.replaceAll(".", "");
+                                                                                    // e.target.value = v;
+                                                                                    formik.setFieldValue("weightBiggerThen", e.target.value)
                                                                                 }} />
                                                                             </InputGroup>
                                                                         </Form.Group>
@@ -463,21 +546,21 @@ export default function OrdersPending() {
                                                                                 <InputGroup.Prepend>
                                                                                     <InputGroup.Text>Kg</InputGroup.Text>
                                                                                 </InputGroup.Prepend>
-                                                                                <Form.Control type="text" label="Peso bruto menor que" onChange={(e) => {
-                                                                                    var v = e.target.value, integer = v.split('.')[0];
-                                                                                    v = v.replace(/\D/, "");
-                                                                                    v = v.replace(/^[0]+/, "");
+                                                                                <Form.Control type="text" label="Peso bruto menor que" name="weightLessThen" value={formik.values.weightLessThen} onChange={(e) => {
+                                                                                    // var v = e.target.value, integer = v.split('.')[0];
+                                                                                    // v = v.replace(/\D/, "");
+                                                                                    // v = v.replace(/^[0]+/, "");
 
-                                                                                    if (v.length <= 3 || !integer) {
-                                                                                        if (v.length === 1) v = '0.00' + v;
-                                                                                        if (v.length === 2) v = '0.0' + v;
-                                                                                        if (v.length === 3) v = '0.' + v;
-                                                                                    } else {
-                                                                                        v = v.replace(/^(\d{1,})(\d{3})$/, "$1.$2");
-                                                                                    }
+                                                                                    // if (v.length <= 3 || !integer) {
+                                                                                    //     if (v.length === 1) v = '0.00' + v;
+                                                                                    //     if (v.length === 2) v = '0.0' + v;
+                                                                                    //     if (v.length === 3) v = '0.' + v;
+                                                                                    // } else {
+                                                                                    //     v = v.replace(/^(\d{1,})(\d{3})$/, "$1.$2");
+                                                                                    // }
 
-                                                                                    e.target.value = v;
-                                                                                    params.weightLessThen = e.target.value.replaceAll(".", "");
+                                                                                    // e.target.value = v;
+                                                                                    formik.setFieldValue("weightLessThen", e.target.value);
                                                                                 }} />
                                                                             </InputGroup>
                                                                         </Form.Group>
@@ -485,7 +568,7 @@ export default function OrdersPending() {
                                                                     <Col md={3}>
                                                                         <Form.Group>
                                                                             <Form.Label>Chave de acesso</Form.Label>
-                                                                            <Form.Control type="text" label="Chave de acesso" style={{ width: 440 }} onChange={(e) => {
+                                                                            <Form.Control type="text" value={formik.values.accessKey} name="accessKey" label="Chave de acesso" style={{ width: 440 }} onChange={(e) => {
                                                                                 let text = e.target.value;
                                                                                 if (text.length > 54)
                                                                                     text = text.substring(0, 54)
@@ -494,7 +577,7 @@ export default function OrdersPending() {
                                                                                 if (text.length === 4 || text.length === 9 || text.length === 14 || text.length === 19 || text.length === 24 || text.length === 29 || text.length === 34 || text.length === 39 || text.length === 44 || text.length === 49)
                                                                                     text += "."
                                                                                 e.target.value = text;
-                                                                                params.accessKey = text.replaceAll(".", "");
+                                                                                formik.setFieldValue("accessKey", text);
                                                                             }} />
                                                                         </Form.Group>
                                                                     </Col>
@@ -504,7 +587,7 @@ export default function OrdersPending() {
                                                                     <Col md={3}>
                                                                         <Form.Group>
                                                                             <Form.Label>CEP</Form.Label>
-                                                                            <Form.Control type="text" label="CEP" onChange={(e) => {
+                                                                            <Form.Control type="text" name="destinationCEP" value={formik.values.destinationCEP} label="CEP" onChange={(e) => {
                                                                                 let text = e.target.value
                                                                                 if (text.length > 9)
                                                                                     text = text.substring(0, 9)
@@ -513,32 +596,32 @@ export default function OrdersPending() {
                                                                                 if (text.length === 5)
                                                                                     text += "-";
                                                                                 e.target.value = text;
-                                                                                params.destinationCEP = e.target.value.replaceAll("-", "");
+                                                                                formik.setFieldValue("destinationCEP", text);
                                                                             }} />
                                                                         </Form.Group>
                                                                     </Col>
                                                                     <Col md={3}>
                                                                         <Form.Group>
                                                                             <Form.Label>Logradouro</Form.Label>
-                                                                            <Form.Control type="text" label="Logradouro" onChange={(e) => params.destinationAddress = e.target.value} />
+                                                                            <Form.Control type="text" label="Logradouro" name="destinationAddress" value={formik.values.destinationAddress} onChange={formik.handleChange} />
                                                                         </Form.Group>
                                                                     </Col>
                                                                     <Col md={3}>
                                                                         <Form.Group>
                                                                             <Form.Label>Bairro</Form.Label>
-                                                                            <Form.Control type="text" label="Bairro" onChange={(e) => params.destinationDistrict = e.target.value} />
+                                                                            <Form.Control type="text" name="destinationDistrict" value={formik.values.destinationDistrict} label="Bairro" onChange={formik.handleChange} />
                                                                         </Form.Group>
                                                                     </Col>
                                                                     <Col md={3}>
                                                                         <Form.Group>
                                                                             <Form.Label>Cidade</Form.Label>
-                                                                            <Form.Control type="text" label="Cidade" onChange={(e) => params.destinationCity = e.target.value} />
+                                                                            <Form.Control type="text" label="Cidade" name="destinationCity" value={formik.values.destinationCity} onChange={formik.handleChange} />
                                                                         </Form.Group>
                                                                     </Col>
                                                                     <Col md={3}>
                                                                         <Form.Group>
                                                                             <Form.Label>UF</Form.Label>
-                                                                            <Form.Control size="sm" as="select" style={{ height: 42 }} onChange={(e) => params.destinationUF = e.target.value}>
+                                                                            <Form.Control size="sm" as="select" value={formik.values.destinationUF} name="destinationUF" style={{ height: 42 }} onChange={formik.handleChange}>
                                                                                 <option value={null}>Todas</option>
                                                                                 <optgroup label="Região Sul">
                                                                                     <option value="PR">PR</option>
@@ -582,18 +665,66 @@ export default function OrdersPending() {
                                                                     <Col md={3}>
                                                                         <Form.Group>
                                                                             <Form.Label>Número</Form.Label>
-                                                                            <Form.Control type="text" label="Número" onChange={(e) => params.destinationNumber = e.target.value} />
+                                                                            <Form.Control type="text" label="Número" name="destinationNumber" value={formik.values.destinationNumber} onChange={formik.handleChange} />
                                                                         </Form.Group>
                                                                     </Col>
                                                                     <Col md={3}>
                                                                         <Form.Group>
                                                                             <Form.Label>Complemento</Form.Label>
-                                                                            <Form.Control type="text" label="Complemento" onChange={(e) => params.destinationComplement = e.target.value} />
+                                                                            <Form.Control type="text" label="Complemento" name="destinationComplement" value={formik.values.destinationComplement} onChange={formik.handleChange} />
                                                                         </Form.Group>
                                                                     </Col>
+                                                                </Row>
+                                                                <hr></hr>
+                                                                <Row>
+                                                                    <Col md={3}>
+                                                                        <Form.Group>
+                                                                            <Form.Label>Ordenar por</Form.Label>
+                                                                            <Form.Control size="sm" as="select" name="orderBy" value={formik.values.orderBy} style={{ height: 42 }} onChange={formik.handleChange}>
+                                                                                <option value="">Data de criação</option>
+                                                                                <option value="receiverName">Nome do destinatário</option>
+                                                                                <option value="receiverCNPJ">CNPJ do destinatário</option>
+                                                                                <option value="carrierName">Nome da transportadora</option>
+                                                                                <option value="carrierCNPJ">CNPJ da transportadora</option>
+                                                                                <option value="issuedAt">Data de emissão</option>
+                                                                                <option value="dispatchedAt">Data de despacho</option>
+                                                                                <option value="vehicleType">Tipo de veículo</option>
+                                                                                <option value="vehiclePlate">Placa do veículo</option>
+                                                                                <option value="totalValue">Valor total</option>
+                                                                                <option value="weight">Peso bruto</option>
+                                                                                <option value="accessKey">Chave de acesso</option>
+                                                                                <option value="destinationCEP">CEP</option>
+                                                                                <option value="destinationAddress">Logradouro</option>
+                                                                                <option value="destinationDistrict">Bairro</option>
+                                                                                <option value="destinationCity">Cidade</option>
+                                                                                <option value="destinationUF">UF</option>
+                                                                                <option value="destinationNumber">Número</option>
+                                                                                <option value="destinationComplement">Complemento</option>
+                                                                            </Form.Control>
+                                                                        </Form.Group>
+                                                                    </Col>
+                                                                    <Col md={2}>
+                                                                        <div className="mb-3" style={{ marginTop: 29 }}>
+                                                                            <Form.Check
+                                                                                type="radio"
+                                                                                label="Ascendente"
+                                                                                name="descending"
+                                                                                value={formik.values.descending}
+                                                                                onChange={(e) => formik.setFieldValue("descending", false)}
+                                                                            />
+
+                                                                            <Form.Check
+                                                                                type="radio"
+                                                                                label="Descendente"
+                                                                                name="descending"
+                                                                                value={formik.values.descending}
+                                                                                onChange={(e) => formik.setFieldValue("descending", true)}
+                                                                            />
+                                                                        </div>
+                                                                    </Col>
                                                                     <Col md={3} style={{ marginTop: 29 }}>
-                                                                        <Button variant="danger" style={{ height: 42 }}><i class="fas fa-eraser" style={{ margin: 0 }}></i></Button>
-                                                                        <Button variant="success" style={{ height: 42 }}><i class="fas fa-search" style={{ margin: 0 }} onClick={() => list(params)}></i></Button>
+                                                                        <Button variant="danger" style={{ height: 42 }} onClick={() => formik.resetForm()}><i class="fas fa-eraser" style={{ margin: 0 }}></i></Button>
+                                                                        <Button variant="success" style={{ height: 42 }} onClick={() => formik.handleSubmit()}><i class="fas fa-search" style={{ margin: 0 }}></i></Button>
                                                                     </Col>
                                                                 </Row>
                                                             </Form>
@@ -615,74 +746,41 @@ export default function OrdersPending() {
                                                                     </div>
                                                                 </Container>
                                                                 :
-                                                                <BootstrapTable keyField='id' data={data?.data?.pendingOrders} columns={columns} bordered={false}
-                                                                    wrapperClasses="table-responsive" hover selectRow={{mode: "checkbox", clickToSelect: true}}/>
-                                                        // <Table responsive className="table table-hover">
-                                                        //     <thead>
-                                                        //         <tr>
-                                                        //             <th>
-                                                        //                 <input type="checkbox" name="checkbox-fill-2" id="checkbox-fill-2" onClick={() => setOrdersIds(data.data?.pendingOrders?.map(o => o.id))} />
-                                                        //             </th>
-                                                        //             <th style={{ textAlign: "center" }} >Destinatário|CNPJ</th>
-                                                        //             <th style={{ textAlign: "center" }}>Transportadora|CNPJ</th>
-                                                        //             <th style={{ textAlign: "center" }}>Data de emissão</th>
-                                                        //             <th style={{ textAlign: "center" }}>Data de despacho</th>
-                                                        //             <th style={{ textAlign: "center" }}>Veículo</th>
-                                                        //             <th style={{ textAlign: "center" }}>XML</th>
-                                                        //             <th style={{ textAlign: "center" }}>Valor total</th>
-                                                        //             <th style={{ textAlign: "center" }}>Peso bruto</th>
-                                                        //             <th style={{ textAlign: "center" }}>Chave de acesso</th>
-                                                        //             <th style={{ textAlign: "center" }}>CEP</th>
-                                                        //             <th style={{ textAlign: "center" }}>Logradouro</th>
-                                                        //             <th style={{ textAlign: "center" }}>Número</th>
-                                                        //             <th style={{ textAlign: "center" }}>Complemento</th>
-                                                        //             <th style={{ textAlign: "center" }}>Bairro</th>
-                                                        //             <th style={{ textAlign: "center" }}>Cidade</th>
-                                                        //             <th style={{ textAlign: "center" }}>UF</th>
-                                                        //         </tr>
-                                                        //     </thead>
-                                                        //     <tbody>
-                                                        //         {
-                                                        //             data.data?.pendingOrders?.map((o, index) => {
-                                                        //                 return (
-                                                        //                     <tr key={index}>
-                                                        //                         <td>
-                                                        //                             <input type="checkbox" name="checkbox-fill-2" id="checkbox-fill-2" />
-                                                        //                         </td>
-                                                        //                         <td>
-                                                        //                             {o.receiverName}
-                                                        //                             <br></br>
-                                                        //                             {o.receiverCNPJ}
-                                                        //                         </td>
-                                                        //                         <td>
-                                                        //                             {o.carrierName}
-                                                        //                             <br></br>
-                                                        //                             {o.carrierCNPJ}
-                                                        //                         </td>
-                                                        //                         <td>{o.issuedAt}</td>
-                                                        //                         <td>{o.dispatchedAt}</td>
-                                                        //                         <td>
-                                                        //                             {o.vehicleType}
-                                                        //                             <br></br>
-                                                        //                             {o.vehiclePlate}
-                                                        //                         </td>
-                                                        //                         <td><a href={o.xmlPath} download target="_blank">Visualizar XML</a></td>
-                                                        //                         <td>{o.totalValue}</td>
-                                                        //                         <td>{o.weight}</td>
-                                                        //                         <td>{o.accessKey}</td>
-                                                        //                         <td>{o.destinationCEP}</td>
-                                                        //                         <td>{o.destinationAddress}</td>
-                                                        //                         <td>{o.destinationNumber}</td>
-                                                        //                         <td>{o.destinationComplement}</td>
-                                                        //                         <td>{o.destinationDistrict}</td>
-                                                        //                         <td>{o.destinationCity}</td>
-                                                        //                         <td>{o.destinationUF}</td>
-                                                        //                     </tr>
-                                                        //                 );
-                                                        //             })
-                                                        //         }
-                                                        //     </tbody>
-                                                        // </Table>
+                                                                <>
+                                                                    <div style={{ display: "flex", marginBottom: 30 }}>
+                                                                        <Button style={{ display: "flex", justifyContent: "center" }} onClick={() => {
+                                                                            if (ordersIds !== undefined && ordersIds.length > 0)
+                                                                                printOrders()
+                                                                            else {
+                                                                                var answer = window.confirm("Você não selecionou nenhuma entrega. Deseja mesmo imprimir todas?");
+                                                                                if (answer) {
+                                                                                    let ids = data.data.pendingOrders.map(p => p.id);
+                                                                                    printOrders(ids);
+                                                                                }
+                                                                                else
+                                                                                    printOrders();
+                                                                            }
+                                                                        }}><i class="fas fa-print" style={{ margin: 0 }}></i></Button>
+                                                                        <Button style={{ display: "flex", justifyContent: "center" }} variant="danger" onClick={() => {
+                                                                            if (ordersIds !== undefined && ordersIds.length > 0)
+                                                                                deleteOrders()
+                                                                            else {
+                                                                                var answer = window.confirm("Você não selecionou nenhuma entrega. Deseja mesmo deletar todas?");
+                                                                                if (answer) {
+                                                                                    let ids = data.data.pendingOrders.map(p => p.id);
+                                                                                    deleteOrders(ids);
+                                                                                }
+                                                                                else
+                                                                                    deleteOrders();
+                                                                            }
+                                                                        }}><i class="fas fa-trash-alt" style={{ margin: 0 }}></i></Button>
+                                                                    </div>
+                                                                    <BootstrapTable keyField='id' data={data?.data?.pendingOrders} columns={columns} bordered={false}
+                                                                        wrapperClasses="table-responsive" hover selectRow={{ mode: "checkbox", clickToSelect: true, onSelect: (row, isSelect) => handleOnSelect(row, isSelect) }} />
+                                                                    <div style={{ display: "flex", justifyContent: "center", marginTop: 50 }}>
+                                                                        <GeneratePagination pageCount={data?.data?.pageCount} setPageActive={setPageActive} pageActive={pageActive} />
+                                                                    </div>
+                                                                </>
                                                     }
                                                 </Card.Body>
                                             </Card>

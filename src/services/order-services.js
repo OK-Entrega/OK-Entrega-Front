@@ -11,3 +11,18 @@ export const getPending = async (data) => {
     const response = await fetch(`${url_api_order}/pending?${data}`, createInit("GET", data));
     return response;
 }
+
+export const getFinished = async (data) => {
+    const response = await fetch(`${url_api_order}/finished?${data}`, createInit("GET", data));
+    return response;
+}
+
+export const print = async (data) => {
+    const response = await fetch(`${url_api_order}/print-orders`, createInit("POST", data));
+    return response;
+}
+
+export const deleteMany = async (data) => {
+    const response = await fetch(`${url_api_order}/delete-orders`, createInit("DELETE", data));
+    return response;
+}

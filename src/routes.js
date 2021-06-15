@@ -14,6 +14,7 @@ import SignUp from "./pages/account/signup/signup";
 import VerifyAccount from "./pages/account/verify-account/verify-account";
 import RequestNewPassword from "./pages/account/i-forgot-my-password/request-new-password";
 import ChangePassword from "./pages/account/i-forgot-my-password/change-password";
+import AcceptInvite from "./pages/accept-invite/accept-invite";
 import MyCompanies from "./pages/my-companies/my-companies"; 
 import Dashboard from "./pages/dashboard/dashboard";
 import Shippers from "./pages/shippers/shippers";
@@ -63,6 +64,7 @@ const routes = (
             <PrivateRouteNotSignedIn path="/i-forgot-my-password/request-new-password" component={RequestNewPassword} />
             <PrivateRouteNotSignedIn path="/i-forgot-my-password/change-password/:token" component={ChangePassword} />
 
+            <PrivateRouteSignedIn exact path="/join-in-a-company/accept-invite/:companyId/:shipperId" component={AcceptInvite} />
             <PrivateRouteSignedIn exact path="/my-companies" component={MyCompanies} />
             <PrivateRouteSignedIn path="/my-companies/:companyId/dashboard" component={Dashboard} /> 
             <PrivateRouteSignedIn path="/my-companies/:companyId/orders/pending" component={OrdersPending} /> 

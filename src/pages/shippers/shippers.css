@@ -1,0 +1,25 @@
+.fa-user-minus {
+    color: red;
+    cursor: pointer;
+    margin-bottom: 10px;
+    transition-duration: 0.25s;
+}
+
+.fa-user {
+    margin-bottom: 10px;
+    transition-duration: 0.25s;
+}
+
+.copy {
+    opacity: 0.75;
+    transition-duration: 0.25s;
+    cursor: pointer;
+    text-shadow: none;
+}
+
+.copy:hover {
+    opacity: 1;
+    transition-duration: 0.25s;
+    color: #2ECC71;
+    text-shadow: 0 0 1px #2ECC71;
+}

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Header from "../../components/header/header";
 import NavAside from "../../components/nav-aside/nav-aside";
 import GeneratePagination from '../../components/generate-pagination/generate-pagination';
-import { Row, Col, Card, Container, Form, Accordion, Button, FormFile, Spinner, InputGroup, Modal, Pagination } from "react-bootstrap";
+import { Row, Col, Card, Container, Form, Accordion, Button, FormFile, Spinner, InputGroup, Modal } from "react-bootstrap";
 import { create, getPending, print, deleteMany } from "../../services/order-services";
 import { useToasts } from "react-toast-notifications";
 import BootstrapTable from 'react-bootstrap-table-next';

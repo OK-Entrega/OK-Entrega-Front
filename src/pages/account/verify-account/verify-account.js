@@ -5,8 +5,8 @@ import { verifyAccount } from "../../../services/user-services";
 import { Spinner } from "react-bootstrap";
 
 export default function VerifyAccount() {
-    //const shipperId = window.location.href.split("/")[4];
-    const shipperId = window.location.href.split("=")[1];
+    const shipperId = window.location.href.split("/")[4];
+    // const shipperId = window.location.href.split("=")[1];
 
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState();

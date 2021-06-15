@@ -1,12 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Header from "../../components/header/header";
 import NavAside from "../../components/nav-aside/nav-aside";
-import { Row, Col, Card, Container, Pagination, Form, Accordion, Button } from "react-bootstrap";
+import GeneratePagination from '../../components/generate-pagination/generate-pagination';
+import { Row, Col, Card, Container, Form, Accordion, Button, Modal, Spinner, InputGroup } from "react-bootstrap";
 import { getFinished } from "../../services/order-services";
+import BootstrapTable from 'react-bootstrap-table-next';
+import { useFormik } from "formik";
+import SeeOccurrencesModal from "./see-occurrences-modal";
 
 const columns = [
     {
-        dataField: 'type',
+        dataField: 'type', //
         text: 'TIPO'
     },
     {
@@ -26,15 +30,11 @@ const columns = [
         text: "DATA DE DESPACHO"
     },
     {
-        dataField: "finishedTt",
+        dataField: "finishedAt", //
         text: "DATA DE FINALIZAÇÃO"
     },
     {
-        dataField: "duration",
-        text: "DURAÇÃO"
-    },
-    {
-        dataField: "documents",
+        dataField: "documents", //
         text: "DOCUMENTOS"
     },
     {
@@ -42,12 +42,8 @@ const columns = [
         text: "VEÍCULO"
     },
     {
-        dataField: "deliverer",
+        dataField: "deliverer", //
         text: "MOTORISTA"
-    },
-    {
-        dataField: "xmlPath",
-        text: "XML"
     },
     {
         dataField: "totalValue",
@@ -96,6 +92,104 @@ const columns = [
 ];
 
 export default function OrdersHistory() {
+
+    const companyId = localStorage.getItem("companyId");
+
+    if (!String(window.location.href).includes(String(localStorage.getItem("companyId"))))
+        window.location.href = `http://localhost:3000/my-companies/${companyId}/orders/history`
+
+    const formik = useFormik({
+        initialValues: {
+            companyId: companyId,
+            receiverCNPJ: "",
+            type: "",
+            receiverName: "",
+            carrierCNPJ: "",
+            carrierName: "",
+            issuedAtLessThen: "",
+            issuedAtBiggerThen: "",
+            dispatchedAtLessThen: "",
+            dispatchedAtBiggerThen: "",
+            finishedAtLessThen: "",
+            finishedAtBiggerThen: "",
+            vehicleType: "",
+            vehiclePlate: "",
+            totalValueLessThen: "",
+            totalValueBiggerThen: "",
+            weightLessThen: "",
+            weightBiggerThen: "",
+            accessKey: "",
+            destinationCEP: "",
+            destinationAddress: "",
+            destinationDistrict: "",
+            destinationCity: "",
+            destinationUF: "",
+            destinationNumber: "",
+            destinationComplement: "",
+            delivererName: "",
+            delivererCellphoneNumber: "",
+            orderBy: "",
+            descending: false,
+            page: pageActive === undefined ? 1 : pageActive
+        },
+        onSubmit: async (values) => {
+            let params = values;
+            params.receiverCNPJ = values.receiverCNPJ?.replaceAll(".", "").replaceAll("-", "").replaceAll("/", "");
+            params.carrierCNPJ = values.carrierCNPJ?.replaceAll(".", "").replaceAll("-", "").replaceAll("/", "");
+            if (values.vehicleType != null)
+                params.vehicleType = values.vehicleType;
+            else
+                params.vehicleType = null;
+            if (isNaN(values.totalValueBiggerThen))
+                params.totalValueBiggerThen = Number(values.totalValueBiggerThen?.replaceAll(".", "").replaceAll(",", "."));
+            if (isNaN(values.totalValueBiggerThen))
+                params.totalValueLessThen = Number(values.totalValueLessThen?.replaceAll(".", "").replaceAll(",", "."));
+            params.weightBiggerThen = Number(values.weightBiggerThen);
+            params.weightLessThen = Number(values.weightLessThen);
+            params.accessKey = values.accessKey?.replaceAll(".", "");
+            params.destinationCEP = values.destinationCEP?.replaceAll("-", "");
+            params.delivererCellphoneNumber.replaceAll("(", "").replaceAll(")", "").replaceAll("-", "").replaceAll(" ", "");
+
+            list(params);
+        }
+    });
+
+    function encodeQueryData(data) {
+        const ret = [];
+        for (let d in data)
+            ret.push(encodeURIComponent(d) + '=' + encodeURIComponent(data[d]));
+        return ret.join('&');
+    }
+
+    const list = async (params) => {
+
+        let queryString = encodeQueryData(params);
+
+        getFinished(queryString)
+            .then(response => response.json())
+            .then(data => {
+                if (data?.data?.pendingOrders)
+                    data.data.pendingOrders.map(o => {
+                        o.receiver = <p>{o.receiverName}<br></br>{o.receiverCNPJ}</p>
+                        o.carrier = <p>{o.carrierName}<br></br>{o.carrierCNPJ}</p>
+                        o.vehicle = <p>{o.vehicleType}<br></br>{o.vehiclePlate}</p>
+                        let backup = o.occurrences;
+                        o.occurrences = backup !== undefined && backup.length > 0 ? <a href="" onClick={(e) => {
+                            e.preventDefault();
+                            setShow(true);
+                            setOccurrences(backup);
+                        }}>Ver ocorrências</a> : <p>Nenhuma ocorrência</p>
+                    })
+                setData(data)
+            });
+    }
+
+    const [show, setShow] = useState(false);
+    const [pageActive, setPageActive] = useState(1);
+    const [data, setData] = useState({});
+    const [showAccordion, setShowAccordion] = useState(false);
+    const [occurrences, setOccurrences] = useState({});
+
     return (
         <>
             <Header />
@@ -119,6 +213,19 @@ export default function OrdersHistory() {
                                                         <Accordion.Collapse eventKey="0">
                                                             <Form style={{ margin: "10px 0 75px 0" }}>
                                                                 <h5>Filtro</h5>
+                                                                <hr></hr>
+                                                                <Row>
+                                                                    <Col md={3}>
+                                                                        <Form.Group>
+                                                                            <Form.Label>Tipo</Form.Label>
+                                                                            <Form.Control size="sm" as="select" name="type" style={{ height: 42 }} onChange={formik.handleChange} value={formik.values.type}>
+                                                                                <option value="" selected>Todos</option>
+                                                                                <option value="Entregas">Entregas</option>
+                                                                                <option value="Devoluções">Devoluções</option>
+                                                                            </Form.Control>
+                                                                        </Form.Group>
+                                                                    </Col>
+                                                                </Row>
                                                                 <hr></hr>
                                                                 <Row>
                                                                     <Col md={3}>
@@ -202,6 +309,18 @@ export default function OrdersHistory() {
                                                                         <Form.Group>
                                                                             <Form.Label>Data de despacho menor que</Form.Label>
                                                                             <Form.Control type="date" name="dispatchedAtLessThen" value={formik.values.dispatchedAtLessThen} onChange={formik.handleChange} />
+                                                                        </Form.Group>
+                                                                    </Col>
+                                                                    <Col md={3}>
+                                                                        <Form.Group>
+                                                                            <Form.Label>Data de finalização maior que</Form.Label>
+                                                                            <Form.Control type="date" name="finishedAtBiggerThen" value={formik.values.finichedAtBiggerThen} onChange={formik.handleChange} />
+                                                                        </Form.Group>
+                                                                    </Col>
+                                                                    <Col md={3}>
+                                                                        <Form.Group>
+                                                                            <Form.Label>Data de finalização menor que</Form.Label>
+                                                                            <Form.Control type="date" name="finishedAtLessThen" value={formik.values.finishedAtLessThen} onChange={formik.handleChange} />
                                                                         </Form.Group>
                                                                     </Col>
                                                                 </Row>
@@ -452,6 +571,57 @@ export default function OrdersHistory() {
                                                                 <Row>
                                                                     <Col md={3}>
                                                                         <Form.Group>
+                                                                            <Form.Label>Motorista</Form.Label>
+                                                                            <Form.Control type="text" label="Motorista" name="delivererName" value={formik.values.delivererName} onChange={formik.handleChange} />
+                                                                        </Form.Group>
+                                                                    </Col>
+                                                                    <Col md={3}>
+                                                                        <Form.Group>
+                                                                            <Form.Label>Número de celular</Form.Label>
+                                                                            <InputGroup className="mb-2">
+                                                                                <InputGroup.Prepend>
+                                                                                    <InputGroup.Text>+55</InputGroup.Text>
+                                                                                </InputGroup.Prepend>
+                                                                                <Form.Control type="text" label="Número de celular" name="delivererCellphoneNumber" value={formik.values.delivererCellphoneNumber} onChange={(e) => {
+                                                                                    var r = e.target.value.replace(/\D/g, "");
+                                                                                    r = r.replace(/^0/, "");
+                                                                                    if (r.length > 10) {
+                                                                                        r = r.replace(/^(\d\d)(\d{5})(\d{4}).*/, "($1) $2-$3");
+                                                                                    } else if (r.length > 5) {
+                                                                                        r = r.replace(/^(\d\d)(\d{4})(\d{0,4}).*/, "($1) $2-$3");
+                                                                                    } else if (r.length > 2) {
+                                                                                        r = r.replace(/^(\d\d)(\d{0,5})/, "($1) $2");
+                                                                                    } else {
+                                                                                        r = r.replace(/^(\d*)/, "($1");
+                                                                                    }
+                                                                                    formik.setFieldValue("delivererCellphoneNumber", r);
+                                                                                }} />
+                                                                            </InputGroup>
+                                                                        </Form.Group>
+                                                                    </Col>
+                                                                </Row>
+                                                                <hr></hr>
+                                                                <Row>
+                                                                    <Col md={3}>
+                                                                        <Form.Group>
+                                                                            <Form.Label>Situação do canhoto</Form.Label>
+                                                                            <Form.Control size="sm" as="select" name="orderBy" value={formik.values.orderBy} style={{ height: 42 }} onChange={formik.handleChange}>
+                                                                                <option value="">Todos</option>
+                                                                                <option value="Válidos">Válidos</option>
+                                                                                <option value="Inválidos">Inválidos</option>
+                                                                                <option value="Sem data">Sem data</option>
+                                                                                <option value="Sem assinatura">Sem assinatura</option>
+                                                                                <option value="Sem número e série">Sem número e série</option>
+                                                                                <option value="Data inválida">Data inválida</option>
+                                                                                <option value="Número e série inválidos">Número e série inválidos</option>
+                                                                            </Form.Control>
+                                                                        </Form.Group>
+                                                                    </Col>
+                                                                </Row>
+                                                                <hr></hr>
+                                                                <Row>
+                                                                    <Col md={3}>
+                                                                        <Form.Group>
                                                                             <Form.Label>Ordenar por</Form.Label>
                                                                             <Form.Control size="sm" as="select" name="orderBy" value={formik.values.orderBy} style={{ height: 42 }} onChange={formik.handleChange}>
                                                                                 <option value="">Data de criação</option>
@@ -520,8 +690,7 @@ export default function OrdersHistory() {
                                                                 </Container>
                                                                 :
                                                                 <>
-                                                                    <BootstrapTable keyField='id' data={data?.data?.pendingOrders} columns={columns} bordered={false}
-                                                                        wrapperClasses="table-responsive" hover selectRow={{ mode: "checkbox", clickToSelect: true, onSelect: (row, isSelect) => handleOnSelect(row, isSelect) }} />
+                                                                    <BootstrapTable keyField='id' data={data?.data?.pendingOrders} columns={columns} bordered={false} wrapperClasses="table-responsive" hover />
                                                                     <div style={{ display: "flex", justifyContent: "center", marginTop: 50 }}>
                                                                         <GeneratePagination pageCount={data?.data?.pageCount} setPageActive={setPageActive} pageActive={pageActive} />
                                                                     </div>

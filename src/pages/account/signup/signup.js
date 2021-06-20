@@ -76,7 +76,6 @@ export default function SignUp() {
                             </div>
                             <h3 className="mb-4">Junte-se a nós</h3>
                             <form>
-
                                 <div className="input-group mb-3">
                                     <input
                                         type="text"
@@ -174,6 +173,8 @@ export default function SignUp() {
                                 }}>{isLoading && <Spinner animation="border" variant="light" size="sm" />} Criar conta</Button>
                             </form>
                             <p className="mb-0 text-muted">Já tem uma conta? <NavLink to="/signin">Entre.</NavLink></p>
+                            <br></br><br></br>
+                            <NavLink to="/"><i class="fas fa-home"></i> Voltar</NavLink>
                         </div>
                     </div>
                 </div>

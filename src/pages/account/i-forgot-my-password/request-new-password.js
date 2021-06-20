@@ -1,10 +1,10 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import { NavLink, Button, Spinner } from "react-bootstrap";
 import Logo from "../../../assets/images/logos/Logo.ico";
 import * as Yup from "yup";
 import { useFormik } from "formik";
 import { useToasts } from "react-toast-notifications";
-import {requestNewPassword} from "../../../services/user-services";
+import { requestNewPassword } from "../../../services/user-services";
 
 export default function RequestNewPassword() {
 
@@ -74,6 +74,8 @@ export default function RequestNewPassword() {
                                 }}>{isLoading && <Spinner animation="border" variant="light" size="sm" />} Solicitar</Button>
                             </form>
                             <p className="mb-0 text-muted">Lembrou sua senha? <a href="/signin">Entre.</a></p>
+                            <br></br><br></br>
+                            <NavLink to="/"><i class="fas fa-home"></i> Voltar</NavLink>
                         </div>
                     </div>
                 </div>

@@ -14,16 +14,16 @@ export default function VerifyAccount() {
 
     useEffect(() => {
         setLoading(true);
-        let data = {shipperId: shipperId}
+        let data = { shipperId: shipperId }
         verifyAccount(data)
             .then(response => response.json())
             .then(data => {
                 setLoading(false);
-                if(data.statusCode === 400) {
+                if (data.statusCode === 400) {
                     setAlreadyVerified(true);
                     setSuccess(true);
                 }
-                else if(data.success)
+                else if (data.success)
                     setSuccess(true);
                 else
                     setSuccess(false);
@@ -47,6 +47,8 @@ export default function VerifyAccount() {
                                         </div>
                                         <h3 className="mb-4">{alreadyVerified ? "Email já verificado!" : success ? "Email verificado com sucesso!" : "Falha ao verificar o email!"}</h3>
                                         <p className="mb-0 text-muted">{alreadyVerified ? "Seu email já foi verificado anteriormente." : success ? "Agora você está a apenas um passo de usufruir de nosso sistema!" : "Recarregue a página, ou crie outro cadastro."} {success && <NavLink to="/signin">Entre.</NavLink>}{!success && <NavLink to="/signup">Cadastre-se novamente.</NavLink>}</p>
+                                        <br></br><br></br>
+                                        <NavLink to="/"><i class="fas fa-home"></i> Voltar</NavLink>
                                     </>
                             }
                         </div>

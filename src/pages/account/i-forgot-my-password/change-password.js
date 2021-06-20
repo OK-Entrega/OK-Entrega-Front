@@ -1,11 +1,11 @@
-import React, {useState} from 'react';
-import {Button, Container, Accordion, Spinner} from "react-bootstrap";
+import React, { useState } from 'react';
+import { Button, Container, Accordion, Spinner, NavLink } from "react-bootstrap";
 import { useToasts } from "react-toast-notifications";
 import "../validation.css";
 import Logo from "../../../assets/images/logos/Logo.ico";
 import * as Yup from "yup";
 import { useFormik } from "formik";
-import {changePasswordForgotten} from "../../../services/user-services";
+import { changePasswordForgotten } from "../../../services/user-services";
 
 export default function ChangePassword() {
     const formik = useFormik({
@@ -135,6 +135,8 @@ export default function ChangePassword() {
                                 }}>{isLoading && <Spinner animation="border" variant="light" size="sm" />} Redefinir</Button>
                             </form>
                             <p className="mb-0 text-muted">Lembrou sua senha? <a href="/signin">Entre.</a></p>
+                            <br></br><br></br>
+                            <NavLink to="/"><i class="fas fa-home"></i> Voltar</NavLink>
                         </div>
                     </div>
                 </div>

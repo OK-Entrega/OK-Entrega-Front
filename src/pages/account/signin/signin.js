@@ -6,7 +6,7 @@ import { Button, Spinner } from "react-bootstrap";
 import { useToasts } from "react-toast-notifications";
 import * as Yup from "yup";
 import { useFormik } from "formik";
-import {signIn} from "../../../services/user-services";
+import { signIn } from "../../../services/user-services";
 
 export default function SignIn() {
 
@@ -108,6 +108,8 @@ export default function SignIn() {
                             </form>
                             <p className="mb-0 text-muted">Esqueceu sua senha? <NavLink to="/i-forgot-my-password/request-new-password">Clique aqui!</NavLink></p>
                             <p className="mb-0 text-muted">Não tem uma conta? <NavLink to="/signup">Crie uma!</NavLink></p>
+                            <br></br><br></br>
+                            <NavLink to="/"><i class="fas fa-home"></i> Voltar</NavLink>
                         </div>
                     </div>
                 </div>

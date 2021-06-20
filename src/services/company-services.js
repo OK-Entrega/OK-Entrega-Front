@@ -32,6 +32,21 @@ export const join = async (data) => {
     return response;
 }
 
+export const getDashboardData = async (data) => {
+    const response = await fetch(`${url_api_company}/get-dashboard-data?${data}`, createInit("GET", data));
+    return response;
+}
+
+export const getFieldRecords = async (data) => {
+    const response = await fetch(`${url_api_company}/get-field-records?${data}`, createInit("GET", data));
+    return response;
+}
+
+export const getGeoreferencingData = async (data) => {
+    const response = await fetch(`${url_api_company}/get-georeferencing-data?${data}`, createInit("GET", data));
+    return response;
+}
+
 export const acceptInvite = async (data) => {
     const response = await fetch(`${url_api_company}/join-a-company/accept-invite`, createInit("PUT", data));
     return response;

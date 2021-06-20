@@ -1,5 +1,5 @@
-import React, {useState} from 'react';
-import { Dropdown, Modal, Button } from "react-bootstrap";
+import React, { useState } from 'react';
+import { Dropdown, Modal } from "react-bootstrap";
 import Logo from "../../assets/images/logos/Logo.ico";
 import { Link } from "react-router-dom";
 import CreateNewCompanyModal from "./create-new-company-modal";
@@ -36,14 +36,19 @@ export default function Header({ myCompanies = false, list }) {
                                     </Dropdown.Toggle>
                                     <Dropdown.Menu alignRight className="profile-notification">
                                         <ul className="pro-body">
-                                            <Modal show={showCreateNewCompanyModal}><CreateNewCompanyModal setShow={setShowCreateNewCompanyModal} list={list}/></Modal>
-                                            <li style={{cursor: "pointer"}} onClick={() => setShowCreateNewCompanyModal(true)}><a className="dropdown-item"><i className="feather icon-plus"/> Criar empresa</a></li>
-                                            <Modal show={showJoinInACompanyModal}><JoinInACompanyModal setShow={setShowJoinInACompanyModal} list={list}/></Modal>
-                                            <li><a className="dropdown-item" style={{cursor: "pointer"}} onClick={() => setShowJoinInACompanyModal(true)}><i className="feather icon-user-plus" /> Entrar com código de empresa</a></li>
+                                            <Modal show={showCreateNewCompanyModal}><CreateNewCompanyModal setShow={setShowCreateNewCompanyModal} list={list} /></Modal>
+                                            <li style={{ cursor: "pointer" }} onClick={() => setShowCreateNewCompanyModal(true)}><a className="dropdown-item"><i className="feather icon-plus" /> Criar empresa</a></li>
+                                            <Modal show={showJoinInACompanyModal}><JoinInACompanyModal setShow={setShowJoinInACompanyModal} list={list} /></Modal>
+                                            <li><a className="dropdown-item" style={{ cursor: "pointer" }} onClick={() => setShowJoinInACompanyModal(true)}><i className="feather icon-user-plus" /> Entrar com código de empresa</a></li>
                                         </ul>
                                     </Dropdown.Menu>
                                 </Dropdown>
                             </li>
+                        }
+                        {
+                            !myCompanies
+                            &&
+                            <a href="/"><i class="fas fa-home" style={{ fontSize: 20, marginRight: 10 }}></i></a>
                         }
                         <li>
                             <Dropdown className="drp-user">
@@ -54,9 +59,11 @@ export default function Header({ myCompanies = false, list }) {
                                 </Dropdown.Toggle>
                                 <Dropdown.Menu alignRight className="profile-notification" style={{ marginTop: 10 }}>
                                     <div className="pro-head">
-                                        {/* <img src={Avatar1} className="img-radius" alt="User Profile" /> */}
                                         <span>Teste de nome grande</span>
-                                        <a className="dud-logout" title="Logout">
+                                        <a className="dud-logout" title="Logout" style={{cursor: "pointer"}} onClick={() => {
+                                            localStorage.removeItem("jwt");
+                                            window.location.href = `http://localhost:3000/`
+                                        }}>
                                             <i className="feather icon-log-out" />
                                         </a>
                                     </div>

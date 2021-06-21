@@ -4,7 +4,8 @@ import Logo from "../../assets/images/logos/Logo.ico";
 import { Link } from "react-router-dom";
 import CreateNewCompanyModal from "./create-new-company-modal";
 import JoinInACompanyModal from "./join-in-a-company-modal";
-import { getProfile } from '../../services/user-services';
+import { getProfile, changePassword } from '../../services/user-services';
+import ChangePasswordModal from "./change-password-modal";
 
 const styleInMyCompanies = {
     margin: "auto",
@@ -14,6 +15,7 @@ const styleInMyCompanies = {
 export default function Header({ myCompanies = false, list }) {
     const [showCreateNewCompanyModal, setShowCreateNewCompanyModal] = useState(false);
     const [showJoinInACompanyModal, setShowJoinInACompanyModal] = useState(false);
+    const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
 
     useEffect(() => {
         getProfile()
@@ -22,8 +24,6 @@ export default function Header({ myCompanies = false, list }) {
                 setData(data);
             })
     }, []);
-
-    
 
     const [data, setData] = useState({});
 
@@ -82,6 +82,7 @@ export default function Header({ myCompanies = false, list }) {
                                     </div>
                                     <ul className="pro-body">
                                         <li>
+                                            <Modal show={showChangePasswordModal}><ChangePasswordModal setShowChangePasswordModal={setShowChangePasswordModal} /></Modal>
                                             <a className="dropdown-item">
                                                 <Button variant="link">
                                                     <i className="feather icon-user" />
@@ -91,7 +92,7 @@ export default function Header({ myCompanies = false, list }) {
                                         </li>
                                         <li>
                                             <a className="dropdown-item">
-                                                <Button variant="link">
+                                                <Button variant="link" >
                                                     <i class="fas fa-envelope"></i>
                                                 </Button>
                                                 {data.data?.email}
@@ -99,7 +100,7 @@ export default function Header({ myCompanies = false, list }) {
                                         </li>
                                         <li>
                                             <a className="dropdown-item">
-                                                <Button variant="link">
+                                                <Button variant="link" onClick={() => setShowChangePasswordModal(true)}>
                                                     <i class="fas fa-key"></i>
                                                 </Button>
                                                 ********

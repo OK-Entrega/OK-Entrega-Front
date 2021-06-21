@@ -27,6 +27,11 @@ export const requestNewPassword = async (data) => {
     return response;
 }
 
+export const changePassword = async (data) => {
+    const response = await fetch(`${url_api_user}/change-password`, createInit("PUT", data));
+    return response;
+}
+
 export const changePasswordForgotten = async (data) => {
     const response = await fetch(`${url_api_user}/change-password-forgotten`, createInit("PUT", data));
     return response;

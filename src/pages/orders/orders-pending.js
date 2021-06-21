@@ -110,7 +110,7 @@ export default function OrdersPending() {
             .then(data => {
                 if (data?.data?.pendingOrders)
                     data.data.pendingOrders.map(o => {
-                        o.xmlPath = <a href={o.xmlPath} download target="_blank">Visualizar XML</a>
+                        o.xmlPath = <a href={o.xmlPath} download target="_blank">Visualizar</a>
                         o.receiver = <p>{o.receiverName}<br></br>{o.receiverCNPJ}</p>
                         o.carrier = <p>{o.carrierName}<br></br>{o.carrierCNPJ}</p>
                         o.vehicle = <p>{o.vehicleType}<br></br>{o.vehiclePlate}</p>
@@ -119,7 +119,7 @@ export default function OrdersPending() {
                             e.preventDefault();
                             setShow(true);
                             setOccurrences(backup);
-                        }}>Ver ocorrências</a> : <p>Nenhuma ocorrência</p>
+                        }}>Visualizar</a> : <p>Nenhuma ocorrência</p>
                     })
                 setData(data)
             });

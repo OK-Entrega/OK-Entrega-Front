@@ -29,11 +29,9 @@ export default function SeeOccurrencesModal({ ...props }) {
                                                 <Row>
                                                     {o.urlsEvidences.map((u, index) => {
                                                         return (
-                                                            <>
-                                                                <Col md={3}>
-                                                                    <img loading="lazy" style={{ height: 75, marginBottom: 20, width: 75, borderRadius: 10 }} src={u} key={index}></img>
-                                                                </Col>
-                                                            </>
+                                                            <Col md={12} key={index}>
+                                                                <img loading="lazy" style={{ width: "100%", borderRadius: 10, marginTop: 15 }} src={u}></img>
+                                                            </Col>
                                                         );
                                                     })}
                                                 </Row>

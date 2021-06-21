@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from "../../components/header/header";
 import NavAside from "../../components/nav-aside/nav-aside";
 import GeneratePagination from '../../components/generate-pagination/generate-pagination';
@@ -7,6 +7,8 @@ import { getFinished } from "../../services/order-services";
 import BootstrapTable from 'react-bootstrap-table-next';
 import { useFormik } from "formik";
 import SeeOccurrencesModal from "./see-occurrences-modal";
+import SeeVoucherModal from "./see-voucher-modal";
+import SeeEvidencesModal from "./see-evidences-modal";
 
 const columns = [
     {
@@ -34,8 +36,16 @@ const columns = [
         text: "DATA DE FINALIZAÇÃO"
     },
     {
-        dataField: "documents", //
-        text: "DOCUMENTOS"
+        dataField: "xmlPath",
+        text: "XML"
+    },
+    {
+        dataField: "urlVoucher", //
+        text: "CANHOTO"
+    },
+    {
+        dataField: "urlsEvidences", //
+        text: "EVIDÊNCIAS"
     },
     {
         dataField: "vehicle",
@@ -168,27 +178,53 @@ export default function OrdersHistory() {
         getFinished(queryString)
             .then(response => response.json())
             .then(data => {
-                if (data?.data?.pendingOrders)
-                    data.data.pendingOrders.map(o => {
+                if (data?.data?.finishedOrders)
+                    data.data.finishedOrders.map(o => {
+                        o.type = <div style={{display: "flex", alignItems: "center"}}><div style={{width: 10, height: 10, borderRadius: 2, background: o.type === "Entrega" ? "#2ECC71" : "#FF0000",  marginRight: 10}}></div><p style={{marginBottom:0}}>{o.type}</p></div>
                         o.receiver = <p>{o.receiverName}<br></br>{o.receiverCNPJ}</p>
                         o.carrier = <p>{o.carrierName}<br></br>{o.carrierCNPJ}</p>
                         o.vehicle = <p>{o.vehicleType}<br></br>{o.vehiclePlate}</p>
+                        o.deliverer = <p>{o.delivererName}<br></br>{o.delivererCellphoneNumber}</p>
                         let backup = o.occurrences;
                         o.occurrences = backup !== undefined && backup.length > 0 ? <a href="" onClick={(e) => {
                             e.preventDefault();
                             setShow(true);
                             setOccurrences(backup);
-                        }}>Ver ocorrências</a> : <p>Nenhuma ocorrência</p>
+                        }}>Visualizar</a> : <p>Nenhuma ocorrência</p>
+
+                        o.xmlPath = <a href={o.xmlPath} download target="_blank">Visualizar</a>
+
+                        let backupUrlVoucher = o.urlVoucher;
+                        o.urlVoucher = backupUrlVoucher === "" ? <p>-</p> : <a href="" onClick={(e) => {
+                            e.preventDefault();
+                            setShowVoucher(true);
+                            setUrlVoucher(backupUrlVoucher);
+                        }}>Visualizar</a>
+
+                        let backupUrlsEvidences = o.urlsEvidences;
+                        o.urlsEvidences = backupUrlsEvidences === "" ? <p>-</p> : <a href="" onClick={(e) => {
+                            e.preventDefault();
+                            setShowEvidences(true);
+                            setUrlsEvidences(backupUrlsEvidences.split(" "));
+                        }}>Visualizar</a>
                     })
                 setData(data)
             });
     }
 
+    useEffect(() => {
+        list({companyId: companyId})
+    }, []);
+
     const [show, setShow] = useState(false);
+    const [showVoucher, setShowVoucher] = useState(false);
+    const [showEvidences, setShowEvidences] = useState(false);
     const [pageActive, setPageActive] = useState(1);
     const [data, setData] = useState({});
     const [showAccordion, setShowAccordion] = useState(false);
     const [occurrences, setOccurrences] = useState({});
+    const [urlVoucher, setUrlVoucher] = useState("");
+    const [urlsEvidences, setUrlsEvidences] = useState("");
 
     return (
         <>
@@ -203,6 +239,8 @@ export default function OrdersHistory() {
                                     <Row>
                                         <Col md={12}>
                                             <Modal show={show}><SeeOccurrencesModal setShow={setShow} occurrences={occurrences} /></Modal>
+                                            <Modal show={showVoucher}><SeeVoucherModal setShowVoucher={setShowVoucher} urlVoucher={urlVoucher} /></Modal>
+                                            <Modal show={showEvidences}><SeeEvidencesModal setShowEvidences={setShowEvidences} urlsEvidences={urlsEvidences} /></Modal>
                                             <Card>
                                                 <Card.Header style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                                                     <Card.Title as="h5">Histórico de entregas</Card.Title>
@@ -601,7 +639,7 @@ export default function OrdersHistory() {
                                                                     </Col>
                                                                 </Row>
                                                                 <hr></hr>
-                                                                <Row>
+                                                                {/* <Row>
                                                                     <Col md={3}>
                                                                         <Form.Group>
                                                                             <Form.Label>Situação do canhoto</Form.Label>
@@ -618,13 +656,16 @@ export default function OrdersHistory() {
                                                                         </Form.Group>
                                                                     </Col>
                                                                 </Row>
-                                                                <hr></hr>
+                                                                <hr></hr> */}
                                                                 <Row>
                                                                     <Col md={3}>
                                                                         <Form.Group>
                                                                             <Form.Label>Ordenar por</Form.Label>
                                                                             <Form.Control size="sm" as="select" name="orderBy" value={formik.values.orderBy} style={{ height: 42 }} onChange={formik.handleChange}>
                                                                                 <option value="">Data de criação</option>
+                                                                                <option value="typeDevolutions">Devoluções</option>
+                                                                                <option value="typeSuccess">Entregas</option>
+                                                                                <option value="finishedAt">Data de finalização</option>
                                                                                 <option value="receiverName">Nome do destinatário</option>
                                                                                 <option value="receiverCNPJ">CNPJ do destinatário</option>
                                                                                 <option value="carrierName">Nome da transportadora</option>
@@ -685,12 +726,12 @@ export default function OrdersHistory() {
                                                                 <Container style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "200px" }}>
                                                                     <div style={{ opacity: 0.5, textAlign: "center" }}>
                                                                         <i class="fas fa-truck" style={{ marginBottom: 10 }}></i>
-                                                                        <h6>Nenhuma entrega finalizada!</h6>
+                                                                        <h6>Nenhuma entrega encontrada!</h6>
                                                                     </div>
                                                                 </Container>
                                                                 :
                                                                 <>
-                                                                    <BootstrapTable keyField='id' data={data?.data?.pendingOrders} columns={columns} bordered={false} wrapperClasses="table-responsive" hover />
+                                                                    <BootstrapTable keyField='id' data={data?.data?.finishedOrders} columns={columns} bordered={false} wrapperClasses="table-responsive" hover />
                                                                     <div style={{ display: "flex", justifyContent: "center", marginTop: 50 }}>
                                                                         <GeneratePagination pageCount={data?.data?.pageCount} setPageActive={setPageActive} pageActive={pageActive} />
                                                                     </div>

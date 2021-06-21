@@ -2,6 +2,11 @@ import {url_api, createInit} from "../constants";
 
 const url_api_user = `${url_api}/account`;
 
+export const getProfile = async (data) => {
+    const response = await fetch(`${url_api_user}/get-profile`, createInit("GET", data));
+    return response;
+}
+
 export const signUp = async (data) => {
     const response = await fetch(`${url_api_user}/signup`, createInit("POST", data));
     return response;

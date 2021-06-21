@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { Dropdown, Modal } from "react-bootstrap";
+import React, { useState, useEffect } from 'react';
+import { Dropdown, Modal, Button } from "react-bootstrap";
 import Logo from "../../assets/images/logos/Logo.ico";
 import { Link } from "react-router-dom";
 import CreateNewCompanyModal from "./create-new-company-modal";
 import JoinInACompanyModal from "./join-in-a-company-modal";
+import { getProfile } from '../../services/user-services';
 
 const styleInMyCompanies = {
     margin: "auto",
@@ -13,6 +14,18 @@ const styleInMyCompanies = {
 export default function Header({ myCompanies = false, list }) {
     const [showCreateNewCompanyModal, setShowCreateNewCompanyModal] = useState(false);
     const [showJoinInACompanyModal, setShowJoinInACompanyModal] = useState(false);
+
+    useEffect(() => {
+        getProfile()
+            .then(response => response.json())
+            .then(data => {
+                setData(data);
+            })
+    }, []);
+
+    
+
+    const [data, setData] = useState({});
 
     return (
         <>
@@ -54,13 +67,13 @@ export default function Header({ myCompanies = false, list }) {
                             <Dropdown className="drp-user">
                                 <Dropdown.Toggle variant={'link'} id="dropdown-basic">
                                     <div className="theme-bg" style={{ height: 35, width: 35, borderRadius: "100%", color: "white", display: "flex", justifyContent: "center", alignItems: "center" }}>
-                                        <p style={{ margin: 0, fontSize: 20, fontWeight: "bold" }}>D</p>
+                                        <p style={{ margin: 0, fontSize: 20, fontWeight: "bold" }}>{data.data?.name?.substring(0, 1).toUpperCase()}</p>
                                     </div>
                                 </Dropdown.Toggle>
                                 <Dropdown.Menu alignRight className="profile-notification" style={{ marginTop: 10 }}>
                                     <div className="pro-head">
-                                        <span>Teste de nome grande</span>
-                                        <a className="dud-logout" title="Logout" style={{cursor: "pointer"}} onClick={() => {
+                                        <span>{data.data?.name}</span>
+                                        <a className="dud-logout" title="Logout" style={{ cursor: "pointer" }} onClick={() => {
                                             localStorage.removeItem("jwt");
                                             window.location.href = `http://localhost:3000/`
                                         }}>
@@ -68,8 +81,30 @@ export default function Header({ myCompanies = false, list }) {
                                         </a>
                                     </div>
                                     <ul className="pro-body">
-                                        <li><a className="dropdown-item"><i className="feather icon-company" /> Criar empresa</a></li>
-                                        <li><a className="dropdown-item"><i className="feather icon-user-plus" /> Entrar em empresa</a></li>
+                                        <li>
+                                            <a className="dropdown-item">
+                                                <Button variant="link">
+                                                    <i className="feather icon-user" />
+                                                </Button>
+                                                {data.data?.name}
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a className="dropdown-item">
+                                                <Button variant="link">
+                                                    <i class="fas fa-envelope"></i>
+                                                </Button>
+                                                {data.data?.email}
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a className="dropdown-item">
+                                                <Button variant="link">
+                                                    <i class="fas fa-key"></i>
+                                                </Button>
+                                                ********
+                                            </a>
+                                        </li>
                                     </ul>
                                 </Dropdown.Menu>
                             </Dropdown>

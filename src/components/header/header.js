@@ -4,8 +4,9 @@ import Logo from "../../assets/images/logos/Logo.ico";
 import { Link } from "react-router-dom";
 import CreateNewCompanyModal from "./create-new-company-modal";
 import JoinInACompanyModal from "./join-in-a-company-modal";
-import { getProfile, changePassword } from '../../services/user-services';
+import { getProfile } from '../../services/user-services';
 import ChangePasswordModal from "./change-password-modal";
+import ChangeEmailModal from "./change-email-modal";
 
 const styleInMyCompanies = {
     margin: "auto",
@@ -16,6 +17,7 @@ export default function Header({ myCompanies = false, list }) {
     const [showCreateNewCompanyModal, setShowCreateNewCompanyModal] = useState(false);
     const [showJoinInACompanyModal, setShowJoinInACompanyModal] = useState(false);
     const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+    const [showChangeEmailModal, setShowChangeEmailModal] = useState(false);
 
     useEffect(() => {
         getProfile()
@@ -82,23 +84,24 @@ export default function Header({ myCompanies = false, list }) {
                                     </div>
                                     <ul className="pro-body">
                                         <li>
-                                            <Modal show={showChangePasswordModal}><ChangePasswordModal setShowChangePasswordModal={setShowChangePasswordModal} /></Modal>
                                             <a className="dropdown-item">
                                                 <Button variant="link">
-                                                    <i className="feather icon-user" />
+                                                    <i className="fas fa-user" />
                                                 </Button>
                                                 {data.data?.name}
                                             </a>
                                         </li>
                                         <li>
+                                            <Modal show={showChangeEmailModal}><ChangeEmailModal setShowChangeEmailModal={setShowChangeEmailModal} /></Modal>
                                             <a className="dropdown-item">
-                                                <Button variant="link" >
+                                                <Button variant="link" onClick={() => setShowChangeEmailModal(true)}>
                                                     <i class="fas fa-envelope"></i>
                                                 </Button>
                                                 {data.data?.email}
                                             </a>
                                         </li>
                                         <li>
+                                            <Modal show={showChangePasswordModal}><ChangePasswordModal setShowChangePasswordModal={setShowChangePasswordModal} /></Modal>
                                             <a className="dropdown-item">
                                                 <Button variant="link" onClick={() => setShowChangePasswordModal(true)}>
                                                     <i class="fas fa-key"></i>

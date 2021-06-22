@@ -27,12 +27,22 @@ export const requestNewPassword = async (data) => {
     return response;
 }
 
+export const changePasswordForgotten = async (data) => {
+    const response = await fetch(`${url_api_user}/change-password-forgotten`, createInit("PUT", data));
+    return response;
+}
+
 export const changePassword = async (data) => {
     const response = await fetch(`${url_api_user}/change-password`, createInit("PUT", data));
     return response;
 }
 
-export const changePasswordForgotten = async (data) => {
-    const response = await fetch(`${url_api_user}/change-password-forgotten`, createInit("PUT", data));
+export const requestNewEmail = async (data) => {
+    const response = await fetch(`${url_api_user}/request-new-access`, createInit("POST", data));
+    return response;
+}
+
+export const changeEmail = async (data) => {
+    const response = await fetch(`${url_api_user}/change-access`, createInit("PUT", data));
     return response;
 }

@@ -46,3 +46,8 @@ export const changeEmail = async (data) => {
     const response = await fetch(`${url_api_user}/change-access`, createInit("PUT", data));
     return response;
 }
+
+export const changeUser = async (data) => {
+    const response = await fetch(`${url_api_user}/change-user`, createInit("PUT", data));
+    return response;
+}

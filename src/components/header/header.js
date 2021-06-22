@@ -7,6 +7,7 @@ import JoinInACompanyModal from "./join-in-a-company-modal";
 import { getProfile } from '../../services/user-services';
 import ChangePasswordModal from "./change-password-modal";
 import ChangeEmailModal from "./change-email-modal";
+import ChangeUserModal from "./change-user-modal";
 
 const styleInMyCompanies = {
     margin: "auto",
@@ -18,6 +19,7 @@ export default function Header({ myCompanies = false, list }) {
     const [showJoinInACompanyModal, setShowJoinInACompanyModal] = useState(false);
     const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
     const [showChangeEmailModal, setShowChangeEmailModal] = useState(false);
+    const [showChangeUserModal, setShowChangeUserModal] = useState(false);
 
     useEffect(() => {
         getProfile()
@@ -84,8 +86,9 @@ export default function Header({ myCompanies = false, list }) {
                                     </div>
                                     <ul className="pro-body">
                                         <li>
+                                            <Modal show={showChangeUserModal}><ChangeUserModal setShowChangeUserModal={setShowChangeUserModal} /></Modal>
                                             <a className="dropdown-item">
-                                                <Button variant="link">
+                                                <Button variant="link" onClick={() => setShowChangeUserModal(true)}>
                                                     <i className="fas fa-user" />
                                                 </Button>
                                                 {data.data?.name}

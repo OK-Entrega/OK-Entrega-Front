@@ -8,6 +8,7 @@ import { getProfile } from '../../services/user-services';
 import ChangePasswordModal from "./change-password-modal";
 import ChangeEmailModal from "./change-email-modal";
 import ChangeUserModal from "./change-user-modal";
+import DeleteAccountModal from './delete-account-modal';
 
 const styleInMyCompanies = {
     margin: "auto",
@@ -20,6 +21,7 @@ export default function Header({ myCompanies = false, list }) {
     const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
     const [showChangeEmailModal, setShowChangeEmailModal] = useState(false);
     const [showChangeUserModal, setShowChangeUserModal] = useState(false);
+    const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
 
     useEffect(() => {
         getProfile()
@@ -110,6 +112,15 @@ export default function Header({ myCompanies = false, list }) {
                                                     <i class="fas fa-key"></i>
                                                 </Button>
                                                 ********
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <Modal show={showDeleteAccountModal}><DeleteAccountModal setShowDeleteAccountModal={setShowDeleteAccountModal} /></Modal>
+                                            <a className="dropdown-item" style={{ color: "red" }}>
+                                                <Button variant="link" onClick={() => setShowDeleteAccountModal(true)}>
+                                                    <i class="fas fa-trash-alt" style={{ color: "red" }}></i>
+                                                </Button>
+                                                Excluir conta
                                             </a>
                                         </li>
                                     </ul>

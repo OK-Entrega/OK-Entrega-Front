@@ -51,3 +51,8 @@ export const changeUser = async (data) => {
     const response = await fetch(`${url_api_user}/change-user`, createInit("PUT", data));
     return response;
 }
+
+export const deleteAccount = async (data) => {
+    const response = await fetch(`${url_api_user}/delete`, createInit("DELETE", data));
+    return response;
+}

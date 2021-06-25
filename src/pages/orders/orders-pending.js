@@ -8,6 +8,7 @@ import { useToasts } from "react-toast-notifications";
 import BootstrapTable from 'react-bootstrap-table-next';
 import { useFormik } from "formik";
 import SeeOccurrencesModal from "./see-occurrences-modal";
+import { LoaderFill } from "../../components/loaders/loaders";
 
 const columns = [
     {
@@ -182,6 +183,7 @@ export default function OrdersPending() {
     const [occurrences, setOccurrences] = useState({});
     const [xmls, setXmls] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [loadingScreen, setLoadingScreen] = useState(false);
     const [showAccordion, setShowAccordion] = useState(false);
     const { addToast } = useToasts();
 
@@ -197,16 +199,19 @@ export default function OrdersPending() {
     }
 
     const printOrders = (ids) => {
+        setLoadingScreen(true);
         let body;
         if (ids)
             body = { ordersIds: ids }
         else
             body = { ordersIds: ordersIds }
+
         print(body)
             .then(response => response.blob())
             .then(data => {
                 var url = window.URL.createObjectURL(data);
                 window.open(url);
+                setLoadingScreen(false);
             });
     }
 
@@ -230,9 +235,17 @@ export default function OrdersPending() {
     }
 
     return (
-        <>
+        <div>
             <Header />
             <NavAside />
+            {
+                loadingScreen
+                &&
+                <>
+                    <LoaderFill/>
+                    <div style={{ zIndex: 99999, background: "#000000", width: "98.70vw", height: "100%", position: "absolute", top: 0, left: 0, opacity: 0.5, display: "flex", justifyContent: "center", alignItems: "center" }}></div>
+                </>
+            }
             <div className="pcoded-main-container">
                 <div className="pcoded-wrapper">
                     <div className="pcoded-content">
@@ -327,6 +340,8 @@ export default function OrdersPending() {
                                                                                 addToast(data.message, { appearance: "error", autoDismiss: true });
 
                                                                             setIsLoading(false);
+
+                                                                            setXmls(null);
                                                                         })
                                                                 }}>{isLoading && <Spinner animation="border" variant="light" size="sm" />} Criar entregas</Button>
                                                             </Container>
@@ -792,6 +807,6 @@ export default function OrdersPending() {
                     </div>
                 </div>
             </div>
-        </>
+        </div>
     );
 }

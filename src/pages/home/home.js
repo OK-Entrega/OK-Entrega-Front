@@ -5,6 +5,7 @@ import googlePlayBadge from "../../assets/images/home/google-play.png";
 import appleStoreBadge from "../../assets/images/home/app-store.png";
 import { Navbar, Nav, Container, Row, Col, Button, Card } from 'react-bootstrap';
 import './home.css';
+import { Link } from "react-scroll";
 
 export default function Home() {
     return (
@@ -37,8 +38,8 @@ export default function Home() {
                             <h2 style={{ fontWeight: "500" }}>Gerencie suas entregas com nossa solução em nuvem  </h2>
                             <h4 style={{ margin: "40px 0 20px 0" }}>Saiba tudo o que você pode fazer com nossos sistemas web/mobile.</h4>
                             <div class="botao">
-                                <Button>Ver mais</Button>
-                                <Button variant="success">Começar</Button>
+                                <Link to="start" smooth={true} duration={500}><Button>Ver mais</Button></Link>
+                                <a href="/signup"><Button variant="success">Começar</Button></a>
                             </div>
                         </Col>
                         <Col md={6}>
@@ -48,7 +49,7 @@ export default function Home() {
                         </Col>
                     </Row>
                 </Container>
-                <Container>
+                <Container id="start">
                     <h2 style={{ fontWeight: "500", textAlign: "center", marginBottom: 100 }}>Aqui, você pode:</h2>
                     <Row>
                         <Col md={6}>
@@ -112,9 +113,9 @@ export default function Home() {
                     <div class="tempo">
                         <h2 style={{ fontWeight: "500", textAlign: "center", margin: "50px 0" }}>Não perca mais tempo!</h2>
                         <div className="botao">
-                            <Button variant="success">Começar</Button>
-                            <Button className="available"><img src={googlePlayBadge} style={{width: 30}}></img> Disponível na Play Store</Button>
-                            <Button className="available"><img src={appleStoreBadge} style={{width: 30}}></img> Disponível na Apple Store</Button>
+                            <a href="/signup"><Button variant="success">Começar</Button></a>
+                            <Button className="available"><img src={googlePlayBadge} style={{ width: 30 }}></img> Disponível na Play Store</Button>
+                            <Button className="available"><img src={appleStoreBadge} style={{ width: 30 }}></img> Disponível na Apple Store</Button>
                         </div>
                     </div>
                 </div>

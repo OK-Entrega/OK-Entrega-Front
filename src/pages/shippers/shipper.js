@@ -11,7 +11,7 @@ export default function Shipper({ ...props }) {
     return (
         <tr className="unread" style={{ display: "flex", justifyContent: "space-between" }}>
             <td style={{ display: "flex" }}>
-                <div className={props.name === "Eu" ? "theme-bg" : "bg-secondary"} style={{ height: 35, width: 35, borderRadius: "100%", color: "white", display: "flex", justifyContent: "center", alignItems: "center", marginRight: 20 }}>
+                <div className={props.name.includes("Eu") ? "theme-bg" : "bg-secondary"} style={{ height: 35, width: 35, borderRadius: "100%", color: "white", display: "flex", justifyContent: "center", alignItems: "center", marginRight: 20 }}>
                     <p style={{ margin: 0, fontSize: 20, fontWeight: "bold" }}>{props.name.substring(0, 1).toUpperCase()}</p>
                 </div>
                 <div>
@@ -22,7 +22,7 @@ export default function Shipper({ ...props }) {
             <td style={{ display: "flex", justifyContent: "end" }}>
                 <div style={{ textAlign: "center" }}>
                     {
-                        ban && props.canBan && props.name !== "Eu"
+                        ban && props.canBan && !props.name.includes("Eu")
                         ?
                         <i className="fas fa-user-minus" onMouseLeave={() => setBan(false)} onClick={() => {
                             removeShipper({companyId: props.companyId, shipperId: props.shipperId})

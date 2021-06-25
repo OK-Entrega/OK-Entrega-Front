@@ -23,40 +23,40 @@ export const DonutChart = ({ ...props }) => {
 }
 
 export const LineChart = ({ ...props }) => {
-return <a></a>
-    // return <ResponsiveLine
-    //     data={props.data}
-    //     margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
-    //     xScale={{ type: 'point' }}
-    //     yScale={{ type: 'linear', min: 'auto', max: 'auto', stacked: true, reverse: false }}
-    //     yFormat=" >-.2f"
-    //     axisTop={null}
-    //     axisRight={null}
-    //     colors={d => d.color}
-    //     axisBottom={{
-    //         orient: 'bottom',
-    //         tickSize: 5,
-    //         tickPadding: 5,
-    //         tickRotation: 0,
-    //         legend: props.legendX,
-    //         legendOffset: 36,
-    //         legendPosition: 'middle'
-    //     }}
-    //     axisLeft={{
-    //         orient: 'left',
-    //         tickSize: 5,
-    //         tickValues: props.data?.reduce((set, { y }) => set?.add(y), new Set())?.size,
-    //         tickPadding: 5,
-    //         tickRotation: 0,
-    //         legend: "Quantidade",
-    //         legendOffset: -40,
-    //         legendPosition: 'middle'
-    //     }}
-    //     pointSize={10}
-    //     pointColor={{ theme: 'background' }}
-    //     pointBorderWidth={2}
-    //     pointBorderColor={{ from: 'serieColor' }}
-    //     pointLabelYOffset={-12}
-    //     useMesh={true}
-    // />     //comentado pra nao dar erro, o filtro nao ta funcionando com o estado, tem q por formik, ai ele nao manda e a api nao retorna nada ai da erro
+    console.log(props.data)
+    return <ResponsiveLine
+        data={props.data}
+        margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
+        xScale={{ type: 'point' }}
+        yScale={{ type: 'linear', min: 'auto', max: 'auto', stacked: false, reverse: false }}
+        yFormat=",.0f"
+        axisTop={null}
+        axisRight={null}
+        colors={d => d.color}
+        axisBottom={{
+            orient: 'bottom',
+            tickSize: 5,
+            tickPadding: 5,
+            tickRotation: 0,
+            legend: props.legendX,
+            legendOffset: 36,
+            legendPosition: 'middle'
+        }}
+        axisLeft={{
+            orient: 'left',
+            tickSize: 5,
+            tickPadding: 5,
+            tickRotation: 0,
+            legend: "Quantidade",
+            legendOffset: -40,
+            legendPosition: 'middle',
+            format: e => Math.floor(e) === e && e
+        }}
+        pointSize={10}
+        pointColor={{ theme: 'background' }}
+        pointBorderWidth={2}
+        pointBorderColor={{ from: 'serieColor' }}
+        pointLabelYOffset={-12}
+        useMesh={true}
+    />     
 }

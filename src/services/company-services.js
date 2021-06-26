@@ -7,6 +7,16 @@ export const getMine = async () => {
     return response;
 }
 
+export const getDetails = async (data) => {
+    const response = await fetch(`${url_api_company}/get-details?${data}`, createInit("GET", data));
+    return response;
+}
+
+export const edit = async (data) => {
+    const response = await fetch(`${url_api_company}/change-company`, createInit("PUT", data, "form"));
+    return response;
+}
+
 export const create = async (data) => {
     const response = await fetch(`${url_api_company}/create-company`, createInit("POST", data, "form"));
     return response;

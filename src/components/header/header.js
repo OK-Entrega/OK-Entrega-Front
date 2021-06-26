@@ -5,10 +5,14 @@ import { Link } from "react-router-dom";
 import CreateNewCompanyModal from "./create-new-company-modal";
 import JoinInACompanyModal from "./join-in-a-company-modal";
 import { getProfile } from '../../services/user-services';
+import { getDetails } from "../../services/company-services";
 import ChangePasswordModal from "./change-password-modal";
 import ChangeEmailModal from "./change-email-modal";
 import ChangeUserModal from "./change-user-modal";
 import DeleteAccountModal from './delete-account-modal';
+import ChangeCompanyModal from "./change-company-modal";
+import DeleteCompanyModal from './delete-company-modal';
+import LeaveFromACompanyModal from './leave-from-a-company';
 
 const styleInMyCompanies = {
     margin: "auto",
@@ -16,12 +20,18 @@ const styleInMyCompanies = {
 }
 
 export default function Header({ myCompanies = false, list }) {
+
+    const companyId = localStorage.getItem("companyId");
+
     const [showCreateNewCompanyModal, setShowCreateNewCompanyModal] = useState(false);
     const [showJoinInACompanyModal, setShowJoinInACompanyModal] = useState(false);
     const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
     const [showChangeEmailModal, setShowChangeEmailModal] = useState(false);
     const [showChangeUserModal, setShowChangeUserModal] = useState(false);
     const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
+    const [showChangeCompanyModal, setShowChangeCompanyModal] = useState(false);
+    const [showDeleteCompanyModal, setShowDeleteCompanyModal] = useState(false);
+    const [showLeaveFromACompanyModal, setShowLeaveFromACompanyModal] = useState(false);
 
     useEffect(() => {
         getProfile()
@@ -31,7 +41,24 @@ export default function Header({ myCompanies = false, list }) {
             })
     }, []);
 
+    useEffect(() => {
+        if (!myCompanies)
+            getDetails(encodeQueryData({ companyId: companyId }))
+                .then(response => response.json())
+                .then(data => {
+                    setDetails(data.data);
+                })
+    }, []);
+
+    function encodeQueryData(data) {
+        const ret = [];
+        for (let d in data)
+            ret.push(encodeURIComponent(d) + '=' + encodeURIComponent(data[d]));
+        return ret.join('&');
+    }
+
     const [data, setData] = useState({});
+    const [details, setDetails] = useState({});
 
     return (
         <>
@@ -67,7 +94,36 @@ export default function Header({ myCompanies = false, list }) {
                         {
                             !myCompanies
                             &&
-                            <a href="/"><i class="fas fa-home" style={{ fontSize: 20, marginRight: 10 }}></i></a>
+                            <>
+                                <a href="/"><i class="fas fa-home" style={{ fontSize: 20, marginRight: 15 }}></i></a>
+                                <li style={{ marginRight: 10 }}>
+                                    <Dropdown className="drp-user-modified">
+                                        <Dropdown.Toggle variant={'link'} id="dropdown-basic">
+                                            <a href="" onClick={(e) => e.preventDefault()}>
+                                                <i class="fas fa-ellipsis-v" style={{ fontSize: 18 }}></i>
+                                                <i class="fas fa-ellipsis-v" style={{ fontSize: 18 }}></i>
+                                                <i class="fas fa-ellipsis-v" style={{ fontSize: 18 }}></i>
+                                            </a>
+                                        </Dropdown.Toggle>
+                                        <Dropdown.Menu alignRight className="profile-notification">
+                                            <ul className="pro-body">
+                                                {
+                                                    details?.myRole === 0
+                                                    &&
+                                                    <>
+                                                        <Modal show={showChangeCompanyModal}><ChangeCompanyModal setShowChangeCompanyModal={setShowChangeCompanyModal} companyId={companyId} /></Modal>
+                                                        <li style={{ cursor: "pointer" }} onClick={() => setShowChangeCompanyModal(true)}><a className="dropdown-item"><i class="fas fa-building"></i> Editar empresa</a></li>
+                                                        <Modal show={showDeleteCompanyModal}><DeleteCompanyModal setShowDeleteCompanyModal={setShowDeleteCompanyModal} /></Modal>
+                                                        <li><a className="dropdown-item" style={{ cursor: "pointer", color: "red" }} onClick={() => setShowDeleteCompanyModal(true)}><i className="fas fa-trash-alt" /> Excluir empresa</a></li>
+                                                    </>
+                                                }
+                                                <Modal show={showLeaveFromACompanyModal}><LeaveFromACompanyModal setShowLeaveFromACompanyModal={setShowLeaveFromACompanyModal} /></Modal>
+                                                <li><a className="dropdown-item" style={{ cursor: "pointer", color: "red" }} onClick={() => setShowLeaveFromACompanyModal(true)}><i class="fas fa-user-minus"></i> Sair da empresa</a></li>
+                                            </ul>
+                                        </Dropdown.Menu>
+                                    </Dropdown>
+                                </li>
+                            </>
                         }
                         <li>
                             <Dropdown className="drp-user">

@@ -113,7 +113,7 @@ export default function Header({ myCompanies = false, list }) {
                                                     <>
                                                         <Modal show={showChangeCompanyModal}><ChangeCompanyModal setShowChangeCompanyModal={setShowChangeCompanyModal} companyId={companyId} /></Modal>
                                                         <li style={{ cursor: "pointer" }} onClick={() => setShowChangeCompanyModal(true)}><a className="dropdown-item"><i class="fas fa-building"></i> Editar empresa</a></li>
-                                                        <Modal show={showDeleteCompanyModal}><DeleteCompanyModal setShowDeleteCompanyModal={setShowDeleteCompanyModal} /></Modal>
+                                                        <Modal show={showDeleteCompanyModal}><DeleteCompanyModal setShowDeleteCompanyModal={setShowDeleteCompanyModal} companyId={companyId} /></Modal>
                                                         <li><a className="dropdown-item" style={{ cursor: "pointer", color: "red" }} onClick={() => setShowDeleteCompanyModal(true)}><i className="fas fa-trash-alt" /> Excluir empresa</a></li>
                                                     </>
                                                 }

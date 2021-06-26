@@ -17,6 +17,11 @@ export const edit = async (data) => {
     return response;
 }
 
+export const deleteCompany = async (data) => {
+    const response = await fetch(`${url_api_company}/delete-company`, createInit("DELETE", data));
+    return response;
+}
+
 export const create = async (data) => {
     const response = await fetch(`${url_api_company}/create-company`, createInit("POST", data, "form"));
     return response;

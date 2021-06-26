@@ -5,14 +5,14 @@ import { Link } from "react-router-dom";
 import CreateNewCompanyModal from "./create-new-company-modal";
 import JoinInACompanyModal from "./join-in-a-company-modal";
 import { getProfile } from '../../services/user-services';
-import { getDetails } from "../../services/company-services";
+import { getDetails, leaveFromCompany } from "../../services/company-services";
 import ChangePasswordModal from "./change-password-modal";
 import ChangeEmailModal from "./change-email-modal";
 import ChangeUserModal from "./change-user-modal";
 import DeleteAccountModal from './delete-account-modal';
 import ChangeCompanyModal from "./change-company-modal";
 import DeleteCompanyModal from './delete-company-modal';
-import LeaveFromACompanyModal from './leave-from-a-company';
+import { useToasts } from "react-toast-notifications";
 
 const styleInMyCompanies = {
     margin: "auto",
@@ -21,6 +21,7 @@ const styleInMyCompanies = {
 
 export default function Header({ myCompanies = false, list }) {
 
+    const { addToast } = useToasts();
     const companyId = localStorage.getItem("companyId");
 
     const [showCreateNewCompanyModal, setShowCreateNewCompanyModal] = useState(false);
@@ -31,7 +32,6 @@ export default function Header({ myCompanies = false, list }) {
     const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
     const [showChangeCompanyModal, setShowChangeCompanyModal] = useState(false);
     const [showDeleteCompanyModal, setShowDeleteCompanyModal] = useState(false);
-    const [showLeaveFromACompanyModal, setShowLeaveFromACompanyModal] = useState(false);
 
     useEffect(() => {
         getProfile()
@@ -49,6 +49,26 @@ export default function Header({ myCompanies = false, list }) {
                     setDetails(data.data);
                 })
     }, []);
+
+    function leave() {
+
+        let answer = window.confirm("Tem certeza de que deseja sair desta empresa?")
+
+        if (answer) {
+            leaveFromCompany({ companyId: companyId })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        addToast(data.message, { appearance: "success", autoDismiss: true });
+                        setTimeout(() => {
+                            window.location.href = "http://localhost:3000/";
+                        }, 500)
+                    }
+                    else
+                        addToast(data.message, { appearance: "error", autoDismiss: true });
+                })
+        }
+    }
 
     function encodeQueryData(data) {
         const ret = [];
@@ -117,8 +137,9 @@ export default function Header({ myCompanies = false, list }) {
                                                         <li><a className="dropdown-item" style={{ cursor: "pointer", color: "red" }} onClick={() => setShowDeleteCompanyModal(true)}><i className="fas fa-trash-alt" /> Excluir empresa</a></li>
                                                     </>
                                                 }
-                                                <Modal show={showLeaveFromACompanyModal}><LeaveFromACompanyModal setShowLeaveFromACompanyModal={setShowLeaveFromACompanyModal} /></Modal>
-                                                <li><a className="dropdown-item" style={{ cursor: "pointer", color: "red" }} onClick={() => setShowLeaveFromACompanyModal(true)}><i class="fas fa-user-minus"></i> Sair da empresa</a></li>
+                                                <li><a className="dropdown-item" style={{ cursor: "pointer", color: "red" }} onClick={() => {
+                                                    leave();
+                                                }}><i class="fas fa-user-minus"></i> Sair da empresa</a></li>
                                             </ul>
                                         </Dropdown.Menu>
                                     </Dropdown>
